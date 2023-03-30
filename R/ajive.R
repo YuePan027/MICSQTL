@@ -35,8 +35,8 @@ ajive_decomp <- function(se, ini_rank = c(20,20), test = "gene_data", level = "b
         dat1 <- assay(se)
         dat2 <- se@metadata[[test]]  
     } else{
-        dat1 <- se@metadata$TCA_deconv[[test]]
-        dat2 <- se@metadata$TCA_deconv2[[test]]
+        dat1 <- se@metadata$TCA_deconv[[level]]
+        dat2 <- se@metadata$TCA_deconv2[[level]]
     }
     
     if (!all(colnames(dat1) == colnames(dat2))){

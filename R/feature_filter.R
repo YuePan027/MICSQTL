@@ -61,16 +61,15 @@ feature_filter <- function(se,
   assay(se) <- as.data.frame(assay(se))
 
   if (!all(colnames(assay(se)) == colnames(se@metadata$SNP_data))){
-    stop("Samples in protein_data do not match that in SNP_data")
+    stop("Samples in protein_data do not match that in SNP_data.")
   }
 
   if (!nrow(se@metadata$SNP_data) == nrow(se@metadata$anno_SNP)){
-    stop("SNPs contained in annotation data frame `anno_SNP` must match the SNPs in `SNP_data`")
+    stop("SNPs contained in annotation data frame `anno_SNP` must match the SNPs in `SNP_data`.")
   }
 
   if(!is.null(target_protein)){
     se@metadata$target_dat <- assay(se)[target_protein, ]
-    #se <- se[target_protein, ]
   } else {
     se@metadata$target_dat <- assay(se)
     target_protein <- rownames(assay(se))
@@ -81,7 +80,6 @@ feature_filter <- function(se,
     se@metadata$anno_SNP <- se@metadata$anno_SNP[match(target_SNP, se@metadata$anno_SNP$ID), , drop=F]
   }
 
-  #rowData(se) <- rowData(se)[match(rownames(assay(se)), rowData(se)$Symbol),]
   choose_SNP_list <- rep(list(1:nrow(se@metadata$SNP_data)), each = length(target_protein))
 
   if("allele" %in% filter_method){
@@ -108,7 +106,6 @@ feature_filter <- function(se,
     },BPPARAM=BPPARAM)
     names(choose_SNP_list) <- target_protein
     idx3 <- which(unlist(lapply(choose_SNP_list, length)) != 0)
-    #se <- se[idx3,]
     se@metadata$target_dat <- se@metadata$target_dat[idx3,]
     choose_SNP_list <- choose_SNP_list[idx3]
   }

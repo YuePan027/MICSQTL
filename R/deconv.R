@@ -4,7 +4,7 @@
 #'
 #' This is a function developed to implement cell-type proportion deconvolution using either `CIBERSORT` or `nnls`.
 #'
-#' @param se A `SummarizedExperiment` object with bulk protein expression data frame contained in `counts` slot, and
+#' @param se A `SummarizedExperiment` object with bulk expression data frame contained in `counts` slot, and
 #' a "signature matrix" which serves as a reference of known cellular signatures contained as an element (`sig_matrix`) in `metadata` slot.
 #' @param method A character string denotes which deconvolution method to use. In this current version, only `CIBERSORT` or `nnls` is supported.
 #' @param TCA_update A logical value indicating whether to use TCA model to re-estimate the cell composition from last step.
@@ -30,9 +30,18 @@ deconv <- function(se,
                    method = c("cibersort", "nnls"),
                    TCA_update = FALSE){
 
+    if (!method %in% c("cibersort", "nnls")){
+        stop("Only 'cibersort' or 'nnls' is valid in current version.")
+    }
   assay(se) <- as.data.frame(assay(se))
-
   in_use <- intersect(rownames(assay(se)), rownames(se@metadata$sig_matrix))
+  if (length(in_use) == 0){
+      stop("None of the feaures in 'signature matrix' exist in bulk expression data.")
+  }
+  if (length(in_use) < 50){
+      warning("Less than 50 features are used to estimate cellular composition. The results may not be reliable.")
+  }
+  
   protein_sub <- as.data.frame(assay(se)[in_use, , drop=F])
   sig_matrix_sub <- se@metadata$sig_matrix[in_use, , drop=F]
 

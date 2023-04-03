@@ -17,6 +17,7 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 biocViews:
 Imports: 
+    testthat,
     TCA,
     nnls,
     e1071,

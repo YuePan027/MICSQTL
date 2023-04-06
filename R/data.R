@@ -51,9 +51,13 @@
 #'
 #' A signature matrix which serves as a reference of known cellular signatures.
 #'
-#' @format ## `ref_data`
+#' @format ## `ref_protein`
 #' A data frame with 2242 rows (proteins) and 4 columns (cell types).
-"ref_data"
+"ref_protein"
+
+#' @format ## `ref_gene`
+#' A data frame with 4151 rows (proteins) and 4 columns (cell types).
+"ref_gene"
 
 
 #' Example gene expression data

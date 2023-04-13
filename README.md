@@ -1,12 +1,14 @@
-mcQTL: Multi-omic and Cell-type-specific Quantitative Trait Loci
+MICSQTL: multi-omic deconvolution, integration, and cell-type-specific Quantitative Trait Loci
 ================
-Yue Pan
-30 March, 2023
+
+MICSQTL (Multi-omic and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by borrowing information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci mapping at cellular resolution. 
+
+Figure1
 
 # Install
 
 ``` r
-#devtools::install_github("YuePan027/mcQTL")
+devtools::install_github("YuePan027/mcQTL")
 library(mcQTL)
 library(ggplot2)
 library(GGally)
@@ -14,30 +16,30 @@ library(GGally)
 
 # Quick start
 
-mcQTL (Multi-omic and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by either using single data source reference or borrowing information in matched transcriptomes. Based on the deconvoluted cellular composition, mcQTL further performs Quantitative Trait Loci mapping at cellular resolution, as well as integrates and visualizes multi-source profiles at bulk and cell type levels. 
+A `SummarizedExperiment` object with bulk protein and/or gene expression
+contained in `counts` slot, and a “signature matrix” which serves as a
+reference of known cell type markers contained as an element in
+`metadata` slot is required as input file. Note that the proteins or
+genes in signature matrix should be a subset of the features in `counts`.
+
+``` r
+se <- SummarizedExperiment(assays = list(protein = mcQTL::protein_data),
+                           rowData = mcQTL::anno_protein)
+metadata(se) <- list(sig_protein = mcQTL::ref_protein,
+                     sig_gene = mcQTL::ref_gene,gene_data=mcQTL::gene_data)
+``` 
 
 ## Cell-type proportion deconvolution
 
-This step is used to obtain cell-type proportion.
+This step estimates cell type proportions per molecule type.
 
-A `SummarizedExperiment` object with bulk protein or gene expression
-contained in `counts` slot, and a “signature matrix” which serves as a
-reference of known cellular signatures contained as an element in
-`metadata` slot is required as input file. Note that the proteins or
-genes in signature matrix can be different from that in assay, but only
-common proteins or genes will be used to do deconvolution.
-
-In this current version, only `CIBERSORT` and `nnls` are supported as
-the deconvolution methods.
+In this current version, only `CIBERSORT` and `nnls` are supported as single-source deconvolution methods.
 
 ``` r
-se <- SummarizedExperiment(assays = list(counts = mcQTL::protein_data),
-                           rowData = mcQTL::anno_protein)
-metadata(se) <- list(sig_matrix = mcQTL::ref_data)
-se <- deconv(se, "cibersort")
+se <- deconv(se, source = 'protein',method = "cibersort")
 ```
 
-This step might take a few minutes if there are many proteins or genes
+This step might take a while if there are many proteins or genes
 in the signature matrix. The cell-type proportion estimates for each
 sample will be stored as an element (`prop`) in `metadata` slot.
 
@@ -51,24 +53,139 @@ head(se@metadata$prop)
 #> Sample_5  0.1993736 0.06795239  0.6104854  0.1221887
 #> Sample_6  0.2233686 0.10127063  0.5485702  0.1267906
 
-ggplot(data.frame(reshape2::melt(se@metadata$prop)), 
-       aes(x = Var2, y = value, fill = Var2)) +
-  geom_point(position = position_jitterdodge(jitter.width = 0.1,
-                                           dodge.width = 0.7),
-           aes(fill = Var2, color = Var2),
-           pch = 21, alpha = 0.5) +
-  geom_boxplot(lwd=0.7, outlier.shape = NA) +
-  theme_classic() +
-  xlab("Cell type") + ylab("Estimated proportion")
 ```
 
 ![](README_files/figure-gfm/decov2-1.png)<!-- -->
 
-Alternatively, if there are cell-type proportion estimates results
-generated using other methods or obtained from other sources, just save
-that as an element (`prop`) in `metadata` slot and this deconvolution
-step can be skipped. Note that the samples in the cell-type proportion
-estimates must match the samples from bulk protein/gene expression data.
+Alternatively, if the cell-type proportions are pre-estimated or known 
+from experiments, users can save that as an element (`prop`) in `metadata`  
+and skip single-source deconvolution step. Note that the samples in the pre-estimated
+cell-type proportions must match the samples from bulk protein/gene 
+expression data.
+
+
+## Cross-source cell-type proportion deconvolution 
+
+The pure cell proteomics reference matrix may be lacking due to the limitations 
+in single cell proteomics technologies. Here, we provide cross-source cell-type fraction
+deconvolution based on matched bulk transcriptome-proteome. In
+the example below, we show how to estimate protein proportions by borrowing 
+information from deconvoluted transcriptomes. 
+
+``` r
+prop_gene <- mcQTL::prop_gene
+set.seed(1234)
+in_example <- sample(1:nrow(mcQTL::protein_data), size=500, replace =F)
+example_mrk <- rownames(mcQTL::protein_data)[in_example]
+se <- cross_prop(se, ini_prop = prop_gene, mrk_prot = example_mrk)
+```
+
+![](README_files/figure-gfm/cross-1.png)<!-- -->
+
+## TCA tensor deconvolution 
+
+The cell-type-specific expression per bulk sample can be predicted
+using `TCA` deconvolution method given cellular composition (stored as
+`prop` in `metadata`). The output will be stored as an element
+(`TCA_deconv`) in `metadata` slot. It is a list with the length of the
+number of cell types (same as cell types in `prop` in `metadata` slot).
+Each element stores a deconvoluted protein expression per bulk sample.
+Below is an example to check the deconvoluted cellular expression for
+the first cell type (restricted to first 5 proteins and first 5
+samples):
+
+``` r
+se <- TCA_deconv(se)
+se@metadata$TCA_deconv[["CellType_1"]][1:5,1:5]
+#>           Sample_1 Sample_2 Sample_3 Sample_4 Sample_5
+#> Protein_1 17.34050 17.25571 16.95043 17.10952 17.19912
+#> Protein_2 16.29749 15.69840 15.41563 16.35809 15.22627
+#> Protein_3 21.94181 21.56862 21.83713 22.13330 21.00002
+#> Protein_4 18.66681 18.89659 18.64090 18.49830 17.90457
+#> Protein_5 18.43079 18.61064 18.32749 17.61362 18.23966
+```
+
+The figure below shows the cell-type-specific differential expression in an example `Protein_6`.
+
+
+![](README_files/figure-gfm/deconv-1.png)<!-- -->
+
+Such patterns may not be profound at bulk level.
+
+
+
+![](README_files/figure-gfm/bulk-1.png)<!-- -->
+
+# Integrative analysis
+
+AJIVE (Angle based Joint and Individual Variation Explained) is useful
+when there are multiple data matrices measured on the same set of
+samples. It decomposes each data matrix as three parts: (1) Joint
+variation across data types (2) Individual structured variation for each
+data type and (3) Residual noise.
+
+It is similar as principal component analysis (PCA), but principal
+component analysis only takes a single data set and decomposes it into
+modes of variation that maximize variation. AJIVE finds joint modes of
+variation from multiple data sources.
+
+Common normalized scores are one of the desirable output to explore the
+joint behavior that is shared by different data sources. Below we show
+the visualization of common normalized scores. It is clear that the
+disease status of these samples are well separated by the first common
+normalized scores.
+
+``` r
+se@metadata$meta <- mcQTL::meta
+se <- ajive_decomp(se)
+cns_plot(se, score = "cns_1", group_var = "disease", 
+         scatter = T, scatter_x = "cns_1", scatter_y = "cns_2")
+```
+
+![](README_files/figure-gfm/ajive-1.png)<!-- -->
+
+## Comparison to PCA
+
+``` r
+pca_res <- prcomp(t(assay(se)), rank. = 3, scale. = F)
+pca_res_protein <- data.frame(pca_res[["x"]])
+pca_res_protein <- cbind(pca_res_protein, mcQTL::meta$disease)
+colnames(pca_res_protein)[4] = 'disease'
+GGally::ggpairs(pca_res_protein, columns = 1:3, aes(color = disease, alpha = 0.5),
+        upper = list(continuous = "points")) + theme_classic()
+```
+
+![](README_files/figure-gfm/pca-1.png)<!-- -->
+
+``` r
+
+
+pca_res <- prcomp(t(se@metadata$gene_data), rank. = 3, scale. = F)
+pca_res_gene <- data.frame(pca_res[["x"]])
+pca_res_gene <- cbind(pca_res_gene, mcQTL::meta$disease)
+colnames(pca_res_gene)[4] = 'disease'
+GGally::ggpairs(pca_res_gene, columns = 1:3, aes(color = disease, alpha = 0.5),
+        upper = list(continuous = "points")) + theme_classic()
+```
+
+![](README_files/figure-gfm/pca-2.png)<!-- -->
+
+## Cell-type-specific AJIVE
+
+The integrative analysis can also be done at cell-type-specific level.
+TCA deconvolution for the secondary data set is required. Here, we
+deconvolute gene expression in additional to protein expression and
+restrict to the first cell type as an illustration example.
+
+``` r
+se <- TCA_deconv(se, test = "gene_data", prop = mcQTL::prop_gene)
+se <- ajive_decomp(se, level = "CellType_1")
+cns_plot(se, score = "cns_1", group_var = "disease", 
+         scatter = T, scatter_x = "cns_1", scatter_y = "cns_2")
+```
+
+![](README_files/figure-gfm/ajive2-1.png)<!-- -->
+
 
 ## Feature filtering
 
@@ -218,170 +335,3 @@ head(se@metadata$TOAST_output[[1]])
 #> 5 Protein_5 9:105077464  0.3458041  0.5438837 0.56463631 0.797753630
 #> 6 Protein_5 9:105655745  0.2276617  0.3832784 0.36864555 0.746866829
 ```
-
-## Cross-source cell-type proportion deconvolution (optional)
-
-Besides cell-type proportion deconvolution using single source as shown
-above, we can also consider cross-source cell-type proportion
-deconvolution if we have matched samples from a different sources. In
-the example below, we show how to estimate cell-type proportion from
-protein data by using an initial proportion estimated from gene
-expression. To explain the idea, we use randomly selected proteins as
-marker proteins. But in practice, more meaningful proteins should be
-included.
-
-``` r
-prop_gene <- mcQTL::prop_gene
-set.seed(1234)
-in_example <- sample(1:nrow(mcQTL::protein_data), size=500, replace =F)
-example_mrk <- rownames(mcQTL::protein_data)[in_example]
-se <- cross_prop(se, ini_prop = prop_gene, mrk_prot = example_mrk)
-ggplot(data.frame(reshape2::melt(se@metadata$cross_prop)), 
-       aes(x = Var2, y = value, fill = Var2)) +
-  geom_point(position = position_jitterdodge(jitter.width = 0.1,
-                                           dodge.width = 0.7),
-           aes(fill = Var2, color = Var2),
-           pch = 21, alpha = 0.5) +
-  geom_boxplot(lwd=0.7, outlier.shape = NA) +
-  theme_classic() +
-  xlab("Cell type") + ylab("Estimated proportion")
-```
-
-![](README_files/figure-gfm/cross-1.png)<!-- -->
-
-## TCA deconvolution (optional)
-
-The cell-type-specific expression per bulk sample can also be estimated
-using `TCA` deconvolution method given cellular composition (stored in
-`prop` in `metadata` slot). The output will be stored as an element
-(`TCA_deconv`) in `metadata` slot. It is a list with the length of the
-number of cell types (same as cell types in `prop` in `metadata` slot).
-Each element stores a deconvoluted protein expression per bulk sample.
-Below is an example to check the deconvoluted cellular expression for
-the first cell type (restricted to first 5 proteins and first 5
-samples):
-
-``` r
-se <- TCA_deconv(se)
-se@metadata$TCA_deconv[["CellType_1"]][1:5,1:5]
-#>           Sample_1 Sample_2 Sample_3 Sample_4 Sample_5
-#> Protein_1 17.34050 17.25571 16.95043 17.10952 17.19912
-#> Protein_2 16.29749 15.69840 15.41563 16.35809 15.22627
-#> Protein_3 21.94181 21.56862 21.83713 22.13330 21.00002
-#> Protein_4 18.66681 18.89659 18.64090 18.49830 17.90457
-#> Protein_5 18.43079 18.61064 18.32749 17.61362 18.23966
-```
-
-The figure below depict the cell-type-specific expression in one example
-protein.
-
-``` r
-res <- se@metadata$TCA_deconv
-idx <- which(rownames(assay(se)) == "Protein_6")
-df_res <- do.call("cbind", lapply(1:length(res), function(i){
-    df <- data.frame(t(res[[i]][idx, , drop = F]))
-    colnames(df) <- names(res)[i]
-    return(df)
-}))
-idx <- which(se@metadata$anno_SNP$ID == "9:137238591")
-
-ggplot(data.frame(reshape2::melt(data.frame(cbind(df_res, genotype = se@metadata$SNP_data[idx,])), id.vars = c("genotype"))), 
-       aes(x = factor(genotype), y = value, fill = variable)) +
-    geom_point(position = position_jitterdodge(jitter.width = 0.1,
-                                               dodge.width = 0.7),
-               aes(fill = variable, color = variable),
-               pch = 21, alpha = 0.5) +
-    geom_boxplot(lwd=0.7, outlier.shape = NA) +
-    theme_classic() +
-    facet_wrap(~variable, scales = "free") +
-    xlab("Genotype") + ylab("Deconvoluted expression")
-```
-
-![](README_files/figure-gfm/deconv-1.png)<!-- -->
-
-Such patterns may not be observed from bulk level.
-
-``` r
-df <- assay(se)
-df <- df[which(rownames(df) == "Protein_6"),]
-df_test <- data.frame(value = as.vector(t(df)), genotype = se@metadata$SNP_data[idx,])
-ggplot(df_test, 
-       aes(x = factor(genotype), y = value)) +
-    geom_jitter(pch = 21, alpha = 0.5) +
-    geom_boxplot(lwd=0.7, outlier.shape = NA) +
-    theme_classic() +
-    xlab("Genotype") + ylab("Deconvoluted expression")
-```
-
-![](README_files/figure-gfm/bulk-1.png)<!-- -->
-
-# Integrative analysis
-
-AJIVE (Angle based Joint and Individual Variation Explained) is useful
-when there are multiple data matrices measured on the same set of
-samples. It decomposes each data matrix as three parts: (1) Joint
-variation across data types (2) Individual structured variation for each
-data type and (3) Residual noise.
-
-It is similar as principal component analysis (PCA), but principal
-component analysis only takes a single data set and decomposes it into
-modes of variation that maximize variation. AJIVE finds joint modes of
-variation from multiple data sources.
-
-Common normalized scores are one of the desirable output to explore the
-joint behavior that is shared by different data sources. Below we show
-the visualization of common normalized scores. It is clear that the
-disease status of these samples are well separated by the first common
-normalized scores.
-
-``` r
-se@metadata$gene_data <- mcQTL::gene_data
-se@metadata$meta <- mcQTL::meta
-se <- ajive_decomp(se)
-cns_plot(se, score = "cns_1", group_var = "disease", 
-         scatter = T, scatter_x = "cns_1", scatter_y = "cns_2")
-```
-
-![](README_files/figure-gfm/ajive-1.png)<!-- -->
-
-## Comparison to PCA
-
-``` r
-pca_res <- prcomp(t(assay(se)), rank. = 3, scale. = F)
-pca_res_protein <- data.frame(pca_res[["x"]])
-pca_res_protein <- cbind(pca_res_protein, mcQTL::meta$disease)
-colnames(pca_res_protein)[4] = 'disease'
-GGally::ggpairs(pca_res_protein, columns = 1:3, aes(color = disease, alpha = 0.5),
-        upper = list(continuous = "points")) + theme_classic()
-```
-
-![](README_files/figure-gfm/pca-1.png)<!-- -->
-
-``` r
-
-
-pca_res <- prcomp(t(se@metadata$gene_data), rank. = 3, scale. = F)
-pca_res_gene <- data.frame(pca_res[["x"]])
-pca_res_gene <- cbind(pca_res_gene, mcQTL::meta$disease)
-colnames(pca_res_gene)[4] = 'disease'
-GGally::ggpairs(pca_res_gene, columns = 1:3, aes(color = disease, alpha = 0.5),
-        upper = list(continuous = "points")) + theme_classic()
-```
-
-![](README_files/figure-gfm/pca-2.png)<!-- -->
-
-## Cell-type-specific AJIVE
-
-The integrative analysis can also be done at cell-type-specific level.
-TCA deconvolution for the secondary data set is required. Here, we
-deconvolute gene expression in additional to protein expression and
-restrict to the first cell type as an illustration example.
-
-``` r
-se <- TCA_deconv(se, test = "gene_data", prop = mcQTL::prop_gene)
-se <- ajive_decomp(se, level = "CellType_1")
-cns_plot(se, score = "cns_1", group_var = "disease", 
-         scatter = T, scatter_x = "cns_1", scatter_y = "cns_2")
-```
-
-![](README_files/figure-gfm/ajive2-1.png)<!-- -->

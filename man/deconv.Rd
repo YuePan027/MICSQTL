@@ -4,15 +4,16 @@
 \alias{deconv}
 \title{Estimation of cellular composition in high-throughput data from heterogeneous tissues}
 \usage{
-deconv(se, method = c("cibersort", "nnls"), TCA_update = FALSE)
+deconv(se, source = "protein", method = "cibersort")
 }
 \arguments{
 \item{se}{A `SummarizedExperiment` object with bulk protein expression data frame contained in `counts` slot, and
 a "signature matrix" which serves as a reference of known cellular signatures contained as an element (`sig_matrix`) in `metadata` slot.}
 
-\item{method}{A character string denotes which deconvolution method to use. In this current version, only `CIBERSORT` or `nnls` is supported.}
+\item{source}{A character string denotes which molecular profiles to be deconvoluted. The setting of `proteins` or `transcript` means single-source 
+deconvolution with source-specific signature matrix, while 'cross' means proteome deconvolution based on pre-estimated transcriptome proportion.}
 
-\item{TCA_update}{A logical value indicating whether to use TCA model to re-estimate the cell composition from last step.}
+\item{method}{A character string denotes which deconvolution method to use. In the current version, only `CIBERSORT` or `nnls` is supported.}
 }
 \value{
 A `SummarizedExperiment`. The cell-type proportion estimates for each sample will be stored as an element (`prop`) in `metadata` slot.
@@ -25,9 +26,9 @@ This is a function developed to implement cell-type proportion deconvolution usi
 }
 \examples{
 
-se <- SummarizedExperiment(assays = list(counts = mcQTL::protein_data),
+se <- SummarizedExperiment(assays = list(protein = mcQTL::protein_data),
                            rowData = mcQTL::anno_protein)
-metadata(se) <- list(sig_matrix = mcQTL::ref_data)
+metadata(se) <- list(sig_matrix = mcQTL::ref_protein)
 se <- deconv(se, "cibersort")
 head(se@metadata$prop)
 

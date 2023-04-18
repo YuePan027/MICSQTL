@@ -13,6 +13,7 @@
 #' The information on cellular composition is required and stored as `prop` in `metadata` slot.
 #' It is an N (the number of samples, should match the sample in `counts` slot) by K (the number of cell types) matrix.
 #' This can be obtained by running `deconv()` before any filtering steps, or use any source data directly.
+#' @param prop The cell-type proportion estimates for each sample.
 #' @param BPPARAM For applying `bplapply`.
 #'
 #' @return A `SummarizedExperiment`. The csQTL results will be stored as an element (`TOAST_output`) in `metadata` slot.
@@ -27,11 +28,10 @@
 #' @export
 #'
 #'
-csQTL <- function(se, BPPARAM = bpparam()){
+csQTL <- function(se, prop = "prop_cross", BPPARAM = bpparam()){
 
+  prop = se@metadata[[prop]]   
   assay(se) <- as.data.frame(assay(se))
-
-  prop <- se@metadata$prop
   protein_tab <- as.data.frame(se@metadata$target_dat)
   SNP_dat <- se@metadata$SNP_data
   SNP_ID <- se@metadata$anno_SNP$ID

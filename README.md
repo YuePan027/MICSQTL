@@ -1,7 +1,7 @@
 MICSQTL: multi-omic deconvolution, integration, and cell-type-specific Quantitative Trait Loci
 ================
 
-MICSQTL (Multi-omic and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by borrowing information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci mapping at cellular resolution. 
+MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by borrowing information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci mapping at cellular resolution. 
 
 Figure1
 

@@ -57,11 +57,7 @@ head(se@metadata$prop)
 
 ![](README_files/figure-gfm/decov2-1.png)<!-- -->
 
-Alternatively, if the cell-type proportions are pre-estimated or known 
-from experiments, users can save that as an element (`prop`) in `metadata`  
-and skip single-source deconvolution step. Note that the samples in the pre-estimated
-cell-type proportions must match the samples from bulk protein/gene 
-expression data.
+Alternatively, if the cell-type proportions are pre-estimated or known from experiments, users can save that as an element (`prop`) in `metadata` and skip single-source deconvolution step. Note that the samples in the pre-estimated cell-type proportions must match the samples from bulk protein/gene expression data.
 
 
 ## Cross-source cell-type proportion deconvolution 
@@ -118,22 +114,11 @@ Such patterns may not be profound at bulk level.
 
 # Integrative analysis
 
-AJIVE (Angle based Joint and Individual Variation Explained) is useful
-when there are multiple data matrices measured on the same set of
-samples. It decomposes each data matrix as three parts: (1) Joint
-variation across data types (2) Individual structured variation for each
-data type and (3) Residual noise.
+AJIVE (Angle based Joint and Individual Variation Explained) is useful when there are multiple data matrices measured on the same set of samples. It decomposes each data matrix as three parts: (1) Joint variation across data types (2) Individual structured variation for each data type and (3) Residual noise.
 
-It is similar as principal component analysis (PCA), but principal
-component analysis only takes a single data set and decomposes it into
-modes of variation that maximize variation. AJIVE finds joint modes of
-variation from multiple data sources.
+It is similar as principal component analysis (PCA), but principal component analysis only takes a single data set and decomposes it into modes of variation that maximize variation. AJIVE finds joint modes of variation from multiple data sources.
 
-Common normalized scores are one of the desirable output to explore the
-joint behavior that is shared by different data sources. Below we show
-the visualization of common normalized scores. It is clear that the
-disease status of these samples are well separated by the first common
-normalized scores.
+Common normalized scores are one of the desirable output to explore the joint behavior that is shared by different data sources. Below we show the visualization of common normalized scores. It is clear that the disease status of these samples are well separated by the first common normalized scores.
 
 ``` r
 se@metadata$meta <- mcQTL::meta
@@ -172,10 +157,7 @@ GGally::ggpairs(pca_res_gene, columns = 1:3, aes(color = disease, alpha = 0.5),
 
 ## Cell-type-specific AJIVE
 
-The integrative analysis can also be done at cell-type-specific level.
-TCA deconvolution for the secondary data set is required. Here, we
-deconvolute gene expression in additional to protein expression and
-restrict to the first cell type as an illustration example.
+The integrative analysis can also be done at cell-type-specific level. TCA deconvolution for the secondary data set is required. Here, we deconvolute gene expression in additional to protein expression and restrict to the first cell type as an illustration example.
 
 ``` r
 se <- TCA_deconv(se, test = "gene_data", prop = mcQTL::prop_gene)
@@ -189,22 +171,9 @@ cns_plot(se, score = "cns_1", group_var = "disease",
 
 ## Feature filtering
 
-The feature filtering can be applied at both proteins/genes and SNPs.
-This step is optional but highly recommended to filter out some features
-that are not very informative or do not make much sense biologically.
-Note that this function is required to run even no filtering is expected
-to be done (just set `filter_method = "null"`) to obtain a consistent
-object format for downstream analysis.
+The feature filtering can be applied at both proteins/genes and SNPs. This step is optional but highly recommended to filter out some features that are not very informative or do not make much sense biologically. Note that this function is required to run even no filtering is expected to be done (just set `filter_method = "null"`) to obtain a consistent object format for downstream analysis.
 
-To apply feature filtering, annotation files for protein/gene and SNPs
-are required. The annotation file for proteins/genes should be stored in
-`rowData()`, where each row corresponds to a protein/gene with it’s
-symbol as row names. The first column should be a character vector
-indicating which chromosome each protein or gene is on. In addition, it
-should contain at least a “Start” column with numeric values indicating
-the start position on that chromosome, a “End” column with numeric
-values indicating the end position on that chromosome and a “Symbol”
-column as a unique name for each protein or gene.
+To apply feature filtering, annotation files for protein/gene and SNPs are required. The annotation file for proteins/genes should be stored in `rowData()`, where each row corresponds to a protein/gene with it’s symbol as row names. The first column should be a character vector indicating which chromosome each protein or gene is on. In addition, it should contain at least a “Start” column with numeric values indicating the start position on that chromosome, a “End” column with numeric values indicating the end position on that chromosome and a “Symbol” column as a unique name for each protein or gene.
 
 ``` r
 head(rowData(se))
@@ -219,19 +188,9 @@ head(rowData(se))
 #> Protein_6           9 137007931 137028140   Protein_6
 ```
 
-The information from genetic variants should be stored in a P (the
-number of SNP) by N (the number of samples, should match the sample in
-`counts` slot) matrix contained as an element (`SNP_data`) in `metadata`
-slot. Each matrix entry corresponds to the genotype group indicator (0
-for 0/0, 1 for 0/1 and 2 for 1/1) for a sample at a genetic location.
-The annotations of these SNP should be stored as an element (`anno_SNP`)
-in `metadata` slot. It should include at least the following columns:
-(1) “CHROM” (which chromosome the SNP is on); (2) “POS” (position of
-that SNP) and (3) “ID” (a unique identifier for each SNP, usually a
-combination of chromosome and its position).
+The information from genetic variants should be stored in a P (the number of SNP) by N (the number of samples, should match the sample in `counts` slot) matrix contained as an element (`SNP_data`) in `metadata` slot. Each matrix entry corresponds to the genotype group indicator (0 for 0/0, 1 for 0/1 and 2 for 1/1) for a sample at a genetic location. The annotations of these SNP should be stored as an element (`anno_SNP`) in `metadata` slot. It should include at least the following columns: (1) “CHROM” (which chromosome the SNP is on); (2) “POS” (position of that SNP) and (3) “ID” (a unique identifier for each SNP, usually a combination of chromosome and its position).
 
-The example SNP data provided here were restricted to chromosome 9 only.
-In practice, the SNPs may from multiple or even all chromosomes.
+The example SNP data provided here were restricted to chromosome 9 only. In practice, the SNPs may from multiple or even all chromosomes.
 
 ``` r
 se@metadata$SNP_data <- mcQTL::SNP_data
@@ -246,22 +205,11 @@ head(se@metadata$anno_SNP)
 #> 342900     9 140300675 9:140300675
 ```
 
-For filtering at protein or gene level, only those symbols contained in
-`target_protein` argument will be kept for csQTL analysis in the next
-step. By default, all proteins or genes will be used.
+For filtering at protein or gene level, only those symbols contained in `target_protein` argument will be kept for csQTL analysis in the next step. By default, all proteins or genes will be used.
 
-For filtering at SNP level, there are three options: (1) only those
-symbols contained in `target_SNP` argument will be kept and if not
-provided, all SNPs will be used for further filtering; (2) filter out
-the SNPs that have minor allele frequency below the threshold defined by
-`filter_allele` argument (`filter_method = "allele"`) and (3) restrict
-to cis-regulatory variants (`filter_method = "distance"`): the SNPs up
-to 1 Mb proximal to the start of the gene.
+For filtering at SNP level, there are three options: (1) only those symbols contained in `target_SNP` argument will be kept and if not provided, all SNPs will be used for further filtering; (2) filter out the SNPs that have minor allele frequency below the threshold defined by `filter_allele` argument (`filter_method = "allele"`) and (3) restrict to cis-regulatory variants (`filter_method = "distance"`): the SNPs up to 1 Mb proximal to the start of the gene.
 
-The results after filtering will be stored as an element
-(`choose_SNP_list`) in `metadata` slot. It is a list with the length of
-the number of proteins for downstream analysis. Each element stores the
-index of SNPs to be tested for corresponding protein. The proteins with
+The results after filtering will be stored as an element (`choose_SNP_list`) in `metadata` slot. It is a list with the length of the number of proteins for downstream analysis. Each element stores the index of SNPs to be tested for corresponding protein. The proteins with
 no SNPs correspond to it will be removed from the returned list.
 
 To simplify the analysis, we only kept 10 targeted proteins from
@@ -286,8 +234,7 @@ se <- feature_filter(se, target_protein = target_protein,
 #> Filter SNP based on distance for protein Protein_283
 ```
 
-In this example, only 20 SNPs are kept for the first target protein and
-only 20 SNPs are kept for the second target protein.
+In this example, 24 SNPs are kept for the first target protein and only 17 SNPs are kept for the second target protein.
 
 ``` r
 unlist(lapply(se@metadata$choose_SNP_list, length))
@@ -299,14 +246,9 @@ unlist(lapply(se@metadata$choose_SNP_list, length))
 
 ## csQTL analysis
 
-In this step, the `TOAST` method is implemented for cell-type-specific
-differential expression analysis based on samples’ genotype.
+In this step, the `TOAST` method is implemented for cell-type-specific differential expression analysis based on samples’ genotype.
 
-The result will be stored as an element (`TOAST_output`) in `metadata`
-slot. It is a list with the same length as tested proteins or genes
-where each element consists of a table including protein or gene symbol,
-SNP ID and p-values from each cell type. A significant p-value indicates
-that the protein or gene expression is different among the sample from
+The result will be stored as an element (`TOAST_output`) in `metadata` slot. It is a list with the same length as tested proteins or genes where each element consists of a table including protein or gene symbol, SNP ID and p-values from each cell type. A significant p-value indicates that the protein or gene expression is different among the sample from
 different genotype groups.
 
 ``` r
@@ -322,8 +264,7 @@ system.time(se <- csQTL(se))
 #> csQTL test for protein Protein_283
 ```
 
-We can check the results from csQTL analysis for the first target
-protein by calling:
+We can check the results from csQTL analysis for the first target protein by calling:
 
 ``` r
 head(se@metadata$TOAST_output[[1]])

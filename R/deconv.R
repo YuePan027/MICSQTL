@@ -5,12 +5,13 @@
 #' This is a function developed to implement cell-type proportion deconvolution using either `CIBERSORT` or `nnls`.
 #'
 #' @param se A `SummarizedExperiment` object with bulk protein expression data frame contained in `counts` slot, and
-#' a "signature matrix" which serves as a reference of known cellular signatures contained as an element (`sig_matrix`) in `metadata` slot.
+#' a "signature matrix" which serves as a reference of known cellular signatures contained as an element start with `sig` (`sig_protein` or `sig_gene` depends on `source`) in `metadata` slot.
+#' Note that the 'signature matrix' should only include markers that have been demonstrated to be useful in previous literature to ensure reliable results.
 #' @param source A character string denotes which molecular profiles to be deconvoluted. The setting of `proteins` or `transcript` means single-source 
 #' deconvolution with source-specific signature matrix, while 'cross' means proteome deconvolution based on pre-estimated transcriptome proportion.
 #' @param method A character string denotes which deconvolution method to use. In the current version, only `CIBERSORT` or `nnls` is supported.
 #'
-#' @return A `SummarizedExperiment`. The cell-type proportion estimates for each sample will be stored as an element (`prop`) in `metadata` slot.
+#' @return A `SummarizedExperiment`. The cell-type proportion estimates for each sample will be stored as an element start with `prop` (depends on `source`) in `metadata` slot.
 #'
 #' @import SummarizedExperiment
 #' @importFrom magrittr "%>%"
@@ -30,7 +31,7 @@
 deconv <- function(se,
                    source='protein',
                    method = "cibersort"){
-  if(source=='protein'){
+  if(source == 'protein'){
   assay(se) <- as.data.frame(assay(se))
 
   in_use <- intersect(rownames(assay(se)), rownames(se@metadata$sig_protein))
@@ -52,7 +53,7 @@ deconv <- function(se,
       colnames(prop) <- colnames(sig_protein)
   }
   
-  se@metadata$prop_protein <- prop
+  se@metadata$prop <- prop
 }
     
   if(source=='transcript'){
@@ -75,7 +76,7 @@ deconv <- function(se,
           colnames(prop) <- colnames(sig_gene)
       }  
       
-      se@metadata$prop_transcript <- prop
+      se@metadata$prop <- prop
       
   }
     
@@ -88,14 +89,15 @@ deconv <- function(se,
                               mixture_file = as.data.frame(gene_sub),
                               perm=0, QN=TRUE,
                               absolute=FALSE, abs_method='sig.score')
-          prop <- result[, 1:ncol(sig_gene)]
+          ini_prop <- result[, 1:ncol(sig_gene)]
       
+      mrk_prot <- intersect(rownames(assay(se)), in_use)
       tca_res <- TCA::tca(X = assay(se)[mrk_prot,],
                           W = ini_prop,
                           refit_W = TRUE,
                           refit_W.sparsity = length(mrk_prot))
       prop <- tca_res$W
-      se@metadata$prop_cross <- prop
+      se@metadata$prop <- prop
   }
 
   

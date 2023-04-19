@@ -1,6 +1,6 @@
-Package: mcQTL
+Package: MICSQTL
 Type: Package
-Title: Multi-omic and Cell-type-specific Quantitative Trait Loci
+Title: MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci)
 Version: 0.1.0
 Author: Authors@R: c(
     person("Yue", "Pan", email = "yuep027@gmail.com", role = c("aut", "cre")),

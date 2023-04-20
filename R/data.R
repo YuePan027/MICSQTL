@@ -3,7 +3,7 @@
 #' A subset of proteomic data PsychENCODE
 #'
 #' @format ## `protein_data`
-#' A data frame with 2242 rows (protein) and 100 columns (sample).
+#' A data frame with 2242 rows (protein) and 127 columns (sample).
 "protein_data"
 
 
@@ -12,7 +12,7 @@
 #' A data set stores the information of genetic variants at each location.
 #'
 #' @format ## `SNP_data`
-#' A sparse matrix with 344388 rows (SNP) from one chromosome and 100 columns (sample, should match the sample in `protein_data`).
+#' A sparse matrix with 2000 rows (SNP) from one chromosome and 127 columns (sample, should match the sample in `protein_data`).
 #' Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
 "SNP_data"
 
@@ -37,7 +37,7 @@
 #' Annotations of each SNP from `SNP_data`
 #'
 #' @format ## `anno_SNP`
-#' A data frame with 344388 rows and 3 columns:
+#' A data frame with 2000 rows and 3 columns:
 #' \describe{
 #'   \item{CHROM}{Chromosome}
 #'   \item{POS}{Position}
@@ -55,8 +55,12 @@
 #' A data frame with 2242 rows (proteins) and 4 columns (cell types).
 "ref_protein"
 
+#' Signature matrix
+#'
+#' A signature matrix which serves as a reference of known cellular signatures.
+#'
 #' @format ## `ref_gene`
-#' A data frame with 4151 rows (proteins) and 4 columns (cell types).
+#' A data frame with 4872 rows (genes) and 5 columns (cell types).
 "ref_gene"
 
 
@@ -65,7 +69,7 @@
 #' A subset of RNA-seq data PsychENCODE
 #'
 #' @format ## `gene_data`
-#' A data frame with 2000 rows (genes) and 100 columns (sample).
+#' A data frame with 10000 rows (genes) and 127 columns (sample).
 "gene_data"
 
 
@@ -74,7 +78,7 @@
 #' Metadata with interested phenotype.
 #'
 #' @format ## `meta`
-#' A data frame with 100 rows (sample) and 2 columns (disease status and gender).
+#' A data frame with 127 rows (sample) and 2 columns (disease status and gender).
 "meta"
 
 

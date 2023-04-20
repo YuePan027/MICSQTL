@@ -16,6 +16,7 @@
 #' Please refer to the original paper (Feng, Qing, et al. "Angle-based joint and individual variation explained." Journal of multivariate analysis 166 (2018): 241-265.)
 #' on the choice of initial ranks.
 #' @param test A character string indicate which data are used as a secondary data block measured on the same set of samples.
+#' @param use_marker If TRUE, only markers contained in `sig_gene` are used. 
 #' @param level A character string indicate if the integrative analysis should be done at cell type specific level and 
 #' which cell type should be used. By default, the integrative analysis is done at bulk level.
 #'
@@ -29,11 +30,18 @@
 #'
 #'
 
-ajive_decomp <- function(se, ini_rank = c(20,20), test = "gene_data", level = "bulk"){
+ajive_decomp <- function(se, ini_rank = c(20,20), test = "gene_data", 
+                         use_marker = F,
+                         level = "bulk"){
     
     if(level == "bulk"){
         dat1 <- assay(se)
-        dat2 <- se@metadata[[test]]  
+        if(use_marker){
+            in_use <- intersect(rownames(se@metadata$gene_data), rownames(se@metadata$sig_gene))
+            dat2 <- se@metadata[[test]][in_use, ]
+        } else 
+            {dat2 <- se@metadata[[test]] }
+         
     } else{
         dat1 <- se@metadata$TCA_deconv[[level]]
         dat2 <- se@metadata$TCA_deconv2[[level]]

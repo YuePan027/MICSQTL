@@ -6,7 +6,7 @@
 \title{SNP annotation data}
 \format{
 ## `anno_SNP`
-A data frame with 344388 rows and 3 columns:
+A data frame with 2000 rows and 3 columns:
 \describe{
   \item{CHROM}{Chromosome}
   \item{POS}{Position}

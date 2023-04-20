@@ -29,7 +29,7 @@
 #'
 csQTL <- function(se, BPPARAM = bpparam()){
 
-  prop = se@metadata$prop   
+  prop <- se@metadata$prop   
   assay(se) <- as.data.frame(assay(se))
   protein_tab <- as.data.frame(se@metadata$target_dat)
   SNP_dat <- se@metadata$SNP_data

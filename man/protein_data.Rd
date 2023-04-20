@@ -6,7 +6,7 @@
 \title{Example protein expression data}
 \format{
 ## `protein_data`
-A data frame with 2242 rows (protein) and 100 columns (sample).
+A data frame with 2242 rows (protein) and 127 columns (sample).
 }
 \usage{
 protein_data

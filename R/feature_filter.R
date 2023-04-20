@@ -40,13 +40,6 @@
 #' @export
 #'
 #'
-#' @examples
-#'
-#' se <- SummarizedExperiment(assays = list(counts = mcQTL::protein_data),
-#'                            rowData = mcQTL::anno_protein)
-#' se@metadata <- list(SNP_data = mcQTL::SNP_data, anno_SNP = mcQTL::anno_SNP)
-#' se <- feature_filter(se, target_protein = c("Protein_5", "Protein_6"),
-#'                      filter_method = c("allele"))
 #'
 #'
 feature_filter <- function(se,

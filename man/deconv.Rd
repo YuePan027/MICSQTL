@@ -7,7 +7,8 @@
 deconv(se, source = "protein", method = "cibersort")
 }
 \arguments{
-\item{se}{A `SummarizedExperiment` object with bulk protein expression data frame contained in `counts` slot, and
+\item{se}{A `SummarizedExperiment` object with bulk protein expression data frame contained in `counts` slot, 
+a bulk transcript expression data frame (`gene_data`) contained in `metadata` slot, and
 a "signature matrix" which serves as a reference of known cellular signatures contained as an element start with `sig` (`sig_protein` or `sig_gene` depends on `source`) in `metadata` slot.
 Note that the 'signature matrix' should only include markers that have been demonstrated to be useful in previous literature to ensure reliable results.}
 
@@ -24,14 +25,4 @@ This function returns a `SummarizedExperiment` object including cell-type propor
 }
 \details{
 This is a function developed to implement cell-type proportion deconvolution using either `CIBERSORT` or `nnls`.
-}
-\examples{
-
-se <- SummarizedExperiment(assays = list(protein = mcQTL::protein_data),
-                           rowData = mcQTL::anno_protein)
-metadata(se) <- list(sig_matrix = mcQTL::ref_protein)
-se <- deconv(se, "cibersort")
-head(se@metadata$prop)
-
-
 }

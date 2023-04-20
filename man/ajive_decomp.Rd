@@ -4,7 +4,13 @@
 \alias{ajive_decomp}
 \title{Integrative analysis for modes of joint variation}
 \usage{
-ajive_decomp(se, ini_rank = c(20, 20), test = "gene_data", level = "bulk")
+ajive_decomp(
+  se,
+  ini_rank = c(20, 20),
+  test = "gene_data",
+  use_marker = F,
+  level = "bulk"
+)
 }
 \arguments{
 \item{se}{A `SummarizedExperiment` object with bulk expression data frame contained in `counts` slot.
@@ -15,6 +21,8 @@ Please refer to the original paper (Feng, Qing, et al. "Angle-based joint and in
 on the choice of initial ranks.}
 
 \item{test}{A character string indicate which data are used as a secondary data block measured on the same set of samples.}
+
+\item{use_marker}{If TRUE, only markers contained in `sig_gene` are used.}
 
 \item{level}{A character string indicate if the integrative analysis should be done at cell type specific level and 
 which cell type should be used. By default, the integrative analysis is done at bulk level.}

@@ -7,11 +7,7 @@ author:
 - name: Qian Li
   affiliation: Department of Biostatistics, St. Jude Children's Research Hospital
 package: MICSQTL
-output: BiocStyle::html_document
-vignette: >
-  %\VignetteIndexEntry{MICSQTL: Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: github_document
 abstract: >
   MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by borrowing information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci mapping at cellular resolution.
 ---
@@ -24,12 +20,18 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
+
+Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to estimate cellular composition in the matched bulk proteomes. The expression of genes and proteins at either bulk level or cell type level can be integrated by Angle-based Joint and Individual Variation Explained (AJIVE) framework. Meanwhile, `MICSQTL` can perform cell-type-specic quantitative trait loci (QTL) mapping to proteins or transcripts based on the input of bulk expression data and the estimated cellular composition per molecule type, without the need for single cell sequencing.  We use matched transcriptome-proteome from human brain frontal cortex tissue samples to demonstrate the input and output of our tool. 
+
+![MICSQTL workflow.](./vignettes/fig1.PNG)
 
 
 
 # Install
 
-```{r setup, message = FALSE}
+```{r setup, message = F, warning = F}
+# Install
 #options(download.file.method = "wininet")
 #devtools::install_github("YuePan027/MICSQTL")
 library(MICSQTL)
@@ -124,7 +126,7 @@ ggplot(cbind(data.frame(reshape2::melt(se@metadata$prop), MICSQTL::meta)),
 ```
 
 
-# Integrative analysis
+## Integrative analysis
 
 AJIVE (Angle based Joint and Individual Variation Explained) is useful when there are multiple data matrices measured on the same set of samples. It decomposes each data matrix as three parts: (1) Joint variation across data types (2) Individual structured variation for each data type and (3) Residual noise. 
 
@@ -139,7 +141,7 @@ cns_plot(se, score = "cns_1", group_var = "disease",
 
 ```
 
-## Comparison to PCA
+### Comparison to PCA
 
 ```{r pca}
 pca_res <- prcomp(t(assay(se)), rank. = 3, scale. = F)
@@ -222,10 +224,11 @@ system.time(se <- csQTL(se))
 
 ```
 
-We can check the results from csQTL analysis for the first target protein by calling:
+We can check the results from csQTL analysis for one of target proteins:
 
 ```{r csQTL2}
-head(se@metadata$TOAST_output[[1]])
+res <- se@metadata$TOAST_output[[2]]
+head(res[order(apply(res, 1, min)), ])
 ```
 
 
@@ -295,5 +298,13 @@ ggplot(df_test,
     xlab("Genotype") + ylab("Deconvoluted expression")
 ```
 
+
+# Licenses of the analysis methods
+| method | citation |
+|--------|----------|
+| [CIBERSORT](https://cibersort.stanford.edu/) | Newman, A. M., Liu, C. L., Green, M. R., Gentles, A. J., Feng, W., Xu, Y., … Alizadeh, A. A. (2015). Robust enumeration of cell subsets from tissue expression profiles. Nature Methods, 12(5), 453–457. |
+| [TCA](https://cran.r-project.org/web/packages/TCA/index.html) | Rahmani, Elior, et al. "Cell-type-specific resolution epigenetics without the need for cell sorting or single-cell biology." Nature communications 10.1 (2019): 3417. |
+| [AJIVE](https://github.com/idc9/r_jive) | Feng, Qing, et al. "Angle-based joint and individual variation explained." Journal of multivariate analysis 166 (2018): 241-265. |
+| [TOAST](http://bioconductor.org/packages/release/bioc/html/TOAST.html) | Li, Ziyi, and Hao Wu. "TOAST: improving reference-free cell composition estimation by cross-cell type differential analysis." Genome biology 20.1 (2019): 1-17. |
 
 

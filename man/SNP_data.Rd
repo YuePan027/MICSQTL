@@ -6,8 +6,10 @@
 \title{Example SNP data}
 \format{
 ## `SNP_data`
-A sparse matrix with 2000 rows (SNP) from one chromosome and 127 columns (sample, should match the sample in `protein_data`).
-Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
+A sparse matrix with 2000 rows (SNP) from one chromosome and 127 columns 
+(sample, should match the sample in `protein_data`).
+Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) 
+for a sample at a genetic location.
 }
 \usage{
 SNP_data

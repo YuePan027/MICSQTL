@@ -1,71 +1,38 @@
-#' Allele proportion
-#'
-#' This function calculates the allele frequency.
-#'
-#' @param x A vector consists of 0, 1 or 2 as genotype group indicator in a genetic location in the genome.
-#'
-#' @return A numeric value for allele frequency.
-#'
-#'
+## Allele proportion
+##
+## This function calculates the allele frequency.
+##
 prop_allele <- function(x){
-  prop <- (sum(x == 0) *2 + sum(x == 1)) / (2*length(x))
-  return(prop)
+    prop <- (sum(x == 0) *2 + sum(x == 1)) / (2*length(x))
+    return(prop)
 }
 
 
-#' Genotype proportion
-#'
-#' This function calculates the genotype proportion in the smallest genotype group.
-#'
-#' @param x A vector consists of 0, 1 or 2 as genotype group indicator in a genetic location in the genome.
-#'
-#' @return A numeric value for genotype proportion.
-#'
-#'
+## Genotype proportion
+##
+## This function calculates the genotype proportion in the smallest genotype group.
+##
+
 prop_geno <- function(x){
-  prop <- min(table(x)/length(x))
-  return(prop)
+    prop <- min(table(x)/length(x))
+    return(prop)
 }
 
 
+cross_prop <- function(se, ini_prop, mrk_prot){
+    if (!all(colnames(assay(se)) == rownames(ini_prop))){
+        stop("Samples in protein_data do not match that in initial proportion")
+    }
+    mrk_prot <- intersect(rownames(assay(se)), mrk_prot)
+    tca_res <- TCA::tca(X = assay(se)[mrk_prot,],
+                        W = ini_prop,
+                        refit_W = TRUE,
+                        refit_W.sparsity = length(mrk_prot))
+    cross_prop <- tca_res$W
+    slot(se, "metadata")$cross_prop <- cross_prop
+    return(se)
+}
 
-
-# CIBERSORT R script v1.04 (last updated 10-24-2016)
-# Note: Signature matrix construction is not currently available; use java version for full functionality.
-# Author: Aaron M. Newman, Stanford University (amnewman@stanford.edu)
-# Requirements:
-#       R v3.0 or later. (dependencies below might not work properly with earlier versions)
-#       install.packages('e1071')
-#       install.pacakges('parallel')
-#       install.packages('preprocessCore')
-#       if preprocessCore is not available in the repositories you have selected, run the following:
-#           source("http://bioconductor.org/biocLite.R")
-#           biocLite("preprocessCore")
-# Windows users using the R GUI may need to Run as Administrator to install or update packages.
-# This script uses 3 parallel processes.  Since Windows does not support forking, this script will run
-# single-threaded in Windows.
-#
-#       Options:
-#       i)   perm = No. permutations; set to >=100 to calculate p-values (default = 0)
-#       ii)  QN = Quantile normalization of input mixture (default = TRUE)
-#       iii) absolute = Run CIBERSORT in absolute mode (default = FALSE)
-#               - note that cell subsets will be scaled by their absolute levels and will not be
-#                 represented as fractions (to derive the default output, normalize absolute
-#                 levels such that they sum to 1 for each mixture sample)
-#               - the sum of all cell subsets in each mixture sample will be added to the ouput
-#                 ('Absolute score'). If LM22 is used, this score will capture total immune content.
-#       iv)  abs_method = if absolute is set to TRUE, choose method: 'no.sumto1' or 'sig.score'
-#               - sig.score = for each mixture sample, define S as the median expression
-#                 level of all genes in the signature matrix divided by the median expression
-#                 level of all genes in the mixture. Multiple cell subset fractions by S.
-#               - no.sumto1 = remove sum to 1 constraint
-#
-# Input: signature matrix and mixture file, formatted as specified at http://cibersort.stanford.edu/tutorial.php
-# Output: matrix object containing all results and tabular data written to disk 'CIBERSORT-Results.txt'
-# License: http://cibersort.stanford.edu/CIBERSORT_License.txt
-
-
-#Core algorithm
 
 CoreAlg <- function(X, y, absolute, abs_method){
 
@@ -76,12 +43,12 @@ CoreAlg <- function(X, y, absolute, abs_method){
     if(i==1){nus <- 0.25}
     if(i==2){nus <- 0.5}
     if(i==3){nus <- 0.75}
-    model<-svm(X,y,type="nu-regression",kernel="linear",nu=nus,scale=F)
+    model<-svm(X,y,type="nu-regression",kernel="linear",nu=nus,scale=FALSE)
     model
   }
 
-  if(Sys.info()['sysname'] == 'Windows') out <- mclapply(1:svn_itor, res, mc.cores=1) else
-    out <- mclapply(1:svn_itor, res, mc.cores=svn_itor)
+  if(Sys.info()['sysname'] == 'Windows') out <- mclapply(seq_len(svn_itor), res, mc.cores=1) else
+    out <- mclapply(seq_len(svn_itor), res, mc.cores=svn_itor)
 
   nusvm <- rep(0,svn_itor)
   corrv <- rep(0,svn_itor)
@@ -89,7 +56,7 @@ CoreAlg <- function(X, y, absolute, abs_method){
   #do cibersort
   t <- 1
   while(t <= svn_itor) {
-    weights = t(out[[t]]$coefs) %*% out[[t]]$SV
+    weights <- t(out[[t]]$coefs) %*% out[[t]]$SV
     weights[which(weights<0)]<-0
     w<-weights/sum(weights)
     u <- sweep(X,MARGIN=2,w,'*')
@@ -120,31 +87,31 @@ CoreAlg <- function(X, y, absolute, abs_method){
 #do permutations
 
 doPerm <- function(perm, X, Y, absolute, abs_method){
-  itor <- 1
-  Ylist <- as.list(data.matrix(Y))
-  dist <- matrix()
-
-  while(itor <= perm){
+    itor <- 1
+    Ylist <- as.list(data.matrix(Y))
+    dist <- matrix()
+    
+    while(itor <= perm){
     #print(itor)
-
+    
     #random mixture
     yr <- as.numeric(Ylist[sample(length(Ylist),dim(X)[1])])
-
+    
     #standardize mixture
     yr <- (yr - mean(yr)) / stats::sd(yr)
-
+    
     #run CIBERSORT core algorithm
     result <- CoreAlg(X, yr, absolute, abs_method)
-
+    
     mix_r <- result$mix_r
-
+    
     #store correlation
     if(itor == 1) {dist <- mix_r}
     else {dist <- rbind(dist, mix_r)}
-
+    
     itor <- itor + 1
-  }
-  newList <- list("dist" = dist)
+    }
+    newList <- list("dist" = dist)
 }
 
 
@@ -178,157 +145,157 @@ doPerm <- function(perm, X, Y, absolute, abs_method){
 CIBERSORT <- function(sig_matrix, mixture_file, perm, QN = TRUE, absolute, abs_method='sig.score'){
 
 
-  if (length(intersect(rownames(mixture_file), rownames(sig_matrix))) == 0){
+    if (length(intersect(rownames(mixture_file), rownames(sig_matrix))) == 0){
     stop("None identical gene between eset and reference had been found.
          Check your eset using: intersect(rownames(eset), rownames(reference))")
-  }
-
-  if(absolute && abs_method != 'no.sumto1' && abs_method != 'sig.score')
+    }
+    
+    if(absolute && abs_method != 'no.sumto1' && abs_method != 'sig.score')
     stop("abs_method must be set to either 'sig.score' or 'no.sumto1'")
-
-  #read in data
-  X<- sig_matrix
-  # X <- read.table(sig_matrix,header=T,sep="\t",row.names=1,check.names=F)
-  Y <- tibble::rownames_to_column(mixture_file,var = "symbol")
-  #to prevent crashing on duplicated gene symbols, add unique numbers to identical names
-  dups <- dim(Y)[1] - length(unique(Y[,1]))
-  if(dups > 0) {
-    warning(paste(dups," duplicated gene symbol(s) found in mixture file!",sep=""))
+    
+    #read in data
+    X<- sig_matrix
+    # X <- read.table(sig_matrix,header=T,sep="\t",row.names=1,check.names=FALSE)
+    Y <- tibble::rownames_to_column(mixture_file,var = "symbol")
+    #to prevent crashing on duplicated gene symbols, add unique numbers to identical names
+    dups <- dim(Y)[1] - length(unique(Y[,1]))
+    if(dups > 0) {
+    warning(glue::glue(dups," duplicated gene symbol(s) found in mixture file!",sep=""))
     rownames(Y) <- make.names(Y[,1], unique=TRUE)
-  }else {rownames(Y) <- Y[,1]}
-  #Y <- Y[,-1]
-  ###################################
-  X <- data.matrix(X)
-  Y <- data.matrix(Y)
-  colname <- colnames(Y)[-1]
-  Y <- as.matrix(Y[,-1], ncol = ncol(Y)-1)
-  colnames(Y) <- colname
-
-  #order
-  X <- X[order(rownames(X)),]
-  Y <- as.matrix(Y[order(rownames(Y)),])
-  colnames(Y) <- colname
-
-  P <- perm #number of permutations
-
-  #anti-log if max < 50 in mixture file
-  if(max(Y) < 50) {Y <- 2^Y}
-
-  #quantile normalization of mixture file
-  # library(preprocessCore)
-  if(QN == TRUE){
+    }else {rownames(Y) <- Y[,1]}
+    #Y <- Y[,-1]
+    ###################################
+    X <- data.matrix(X)
+    Y <- data.matrix(Y)
+    colname <- colnames(Y)[-1]
+    Y <- as.matrix(Y[,-1], ncol = ncol(Y)-1)
+    colnames(Y) <- colname
+    
+    #order
+    X <- X[order(rownames(X)),]
+    Y <- as.matrix(Y[order(rownames(Y)),])
+    colnames(Y) <- colname
+    
+    P <- perm #number of permutations
+    
+    #anti-log if max < 50 in mixture file
+    if(max(Y) < 50) {Y <- 2^Y}
+    
+    #quantile normalization of mixture file
+    # library(preprocessCore)
+    if(QN == TRUE){
     tmpc <- colnames(Y)
     tmpr <- rownames(Y)
     Y <- normalize.quantiles(Y)
     colnames(Y) <- tmpc
     rownames(Y) <- tmpr
-  }
-
-  #store original mixtures
-  Yorig <- Y
-  Ymedian <- max(stats::median(Yorig),1)
-
-  #intersect genes
-  Xgns <- row.names(X)
-  Ygns <- row.names(Y)
-  YintX <- Ygns %in% Xgns
-  Y <- as.matrix(Y[YintX,])
-  colnames(Y) <- colname
-  XintY <- Xgns %in% row.names(Y)
-  X <- X[XintY,]
-
-  #standardize sig matrix
-  X <- (X - mean(X)) / stats::sd(as.vector(X))
-
-  #empirical null distribution of correlation coefficients
-  if(P > 0) {nulldist <- sort(doPerm(P, X, Y, absolute, abs_method)$dist)}
-
-  header <- c('Mixture',colnames(X),"P-value","Correlation","RMSE")
-  if(absolute) header <- c(header, paste('Absolute score (',abs_method,')',sep=""))
-
-  output <- matrix()
-  itor <- 1
-  mixtures <- dim(Y)[2]
-  pval <- 9999
-
-  if(mixtures == 1){
+    }
+    
+    #store original mixtures
+    Yorig <- Y
+    Ymedian <- max(stats::median(Yorig),1)
+    
+    #intersect genes
+    Xgns <- row.names(X)
+    Ygns <- row.names(Y)
+    YintX <- Ygns %in% Xgns
+    Y <- as.matrix(Y[YintX,])
+    colnames(Y) <- colname
+    XintY <- Xgns %in% row.names(Y)
+    X <- X[XintY,]
+    
+    #standardize sig matrix
+    X <- (X - mean(X)) / stats::sd(as.vector(X))
+    
+    #empirical null distribution of correlation coefficients
+    if(P > 0) {nulldist <- sort(doPerm(P, X, Y, absolute, abs_method)$dist)}
+    
+    header <- c('Mixture',colnames(X),"P-value","Correlation","RMSE")
+    if(absolute) header <- c(header, paste('Absolute score (',abs_method,')',sep=""))
+    
+    output <- matrix()
+    itor <- 1
+    mixtures <- dim(Y)[2]
+    pval <- 9999
+    
+    if(mixtures == 1){
     y <- Y[,itor]
-
+    
     #standardize mixture
     y <- (y - mean(y)) / stats::sd(y)
-
+    
     #run SVR core algorithm
     result <- CoreAlg(X, y, absolute, abs_method)
-
+    
     #get results
     w <- result$w
     mix_r <- result$mix_r
     mix_rmse <- result$mix_rmse
-
+    
     if(absolute && abs_method == 'sig.score') {
       w <- w * stats::median(Y[,itor]) / Ymedian
     }
-
+    
     #calculate p-value
     if(P > 0) {pval <- 1 - (which.min(abs(nulldist - mix_r)) / length(nulldist))}
-
+    
     #print output
     out <- c(colnames(Y)[itor],w,pval,mix_r,mix_rmse)
     if(absolute) out <- c(out, sum(w))
     output <- matrix(out, nrow = 1)
-  } else{
+    } else{
     #iterate through mixtures
     while(itor <= mixtures){
-
+    
       y <- Y[,itor]
-
+    
       #standardize mixture
       y <- (y - mean(y)) / stats::sd(y)
-
+    
       #run SVR core algorithm
       result <- CoreAlg(X, y, absolute, abs_method)
-
+    
       #get results
       w <- result$w
       mix_r <- result$mix_r
       mix_rmse <- result$mix_rmse
-
+    
       if(absolute && abs_method == 'sig.score') {
         w <- w * stats::median(Y[,itor]) / Ymedian
       }
-
+    
       #calculate p-value
       if(P > 0) {pval <- 1 - (which.min(abs(nulldist - mix_r)) / length(nulldist))}
-
+    
       #print output
       out <- c(colnames(Y)[itor],w,pval,mix_r,mix_rmse)
       if(absolute) out <- c(out, sum(w))
       if(itor == 1) {output <- out}
       else {output <- rbind(output, out)}
-
+    
       itor <- itor + 1
-
+    
     }
-  }
-
-
-
-  #save results
-  # write.table(rbind(header,output), file="CIBERSORT-Results.txt", sep="\t", row.names=F, col.names=F, quote=F)
-
-  #return matrix object containing all results
-  obj <- rbind(header,output)
-  obj <- obj[,-1]
-  obj <- obj[-1,]
-  if (mixtures == 1){
+    }
+    
+    
+    
+    #save results
+    # write.table(rbind(header,output), file="CIBERSORT-Results.txt", sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE)
+    
+    #return matrix object containing all results
+    obj <- rbind(header,output)
+    obj <- obj[,-1]
+    obj <- obj[-1,]
+    if (mixtures == 1){
     obj <- matrix(as.numeric(obj), nrow = 1)
-  } else{
+    } else{
     obj <- matrix(as.numeric(unlist(obj)),nrow=nrow(obj))
-  }
-  rownames(obj) <- colnames(Y)
-  if(!absolute){colnames(obj) <- c(colnames(X),"P-value","Correlation","RMSE")}
-  else{colnames(obj) <- c(colnames(X),"P-value","Correlation","RMSE",paste('Absolute score (',abs_method,')',sep=""))}
-  obj
+    }
+    rownames(obj) <- colnames(Y)
+    if(!absolute){colnames(obj) <- c(colnames(X),"P-value","Correlation","RMSE")}
+    else{colnames(obj) <- c(colnames(X),"P-value","Correlation","RMSE",paste('Absolute score (',abs_method,')',sep=""))}
+    obj
 }
 
 
@@ -339,30 +306,20 @@ CIBERSORT <- function(sig_matrix, mixture_file, perm, QN = TRUE, absolute, abs_m
 
 
 # Below are from ajive (https://github.com/idc9/r_jive)
-#' The singular value threshold.
-#'
-#' Computes the singluar value theshold for the data matrix (half way between the rank and rank + 1 singluar value).
-#'
-#' @param singular_values Numeric. The singular values.
-#' @param rank Integer. The rank of the approximation.
+## The singular value threshold.
+##
+## Computes the singluar value theshold for the data matrix (half way between the rank and rank + 1 singluar value).
+
 get_sv_threshold <- function(singular_values, rank){
 
     .5 * (singular_values[rank] + singular_values[rank + 1])
 }
 
-#' Computes the joint scores.
-#'
-#' Estimate the joint rank with the wedin bound, compute the signal scores SVD, double check each joint component.
-#'
-#' @param blocks List. A list of the data matrices.
-#' @param block_svd List. The SVD of the data blocks.
-#' @param initial_signal_ranks Numeric vector. Initial signal ranks estimates.
-#' @param sv_thresholds Numeric vector. The singular value thresholds from the initial signal rank estimates.
-#' @param n_wedin_samples Integer. Number of wedin bound samples to draw for each data matrix.
-#' @param n_rand_dir_samples Integer. Number of random direction bound samples to draw.
-#' @param joint_rank Integer or NA. User specified joint_rank. If NA will be estimated from data.
-#'
-#' @return Matrix. The joint scores.
+## Computes the joint scores.
+##
+## Estimate the joint rank with the wedin bound, compute the signal scores SVD, double check each joint component.
+##
+
 get_joint_scores <- function(blocks, block_svd, initial_signal_ranks, sv_thresholds,
                              n_wedin_samples=1000, n_rand_dir_samples=1000,
                              joint_rank=NA){
@@ -378,8 +335,8 @@ get_joint_scores <- function(blocks, block_svd, initial_signal_ranks, sv_thresho
 
     # SVD of the signal scores matrix -----------------------------------------
     signal_scores <- list()
-    for(k in 1:K){
-        signal_scores[[k]] <- block_svd[[k]][['u']][, 1:initial_signal_ranks[k]]
+    for(k in seq_len(K)){
+        signal_scores[[k]] <- block_svd[[k]][['u']][, seq_len(initial_signal_ranks[k])]
     }
 
     M <- do.call(cbind, signal_scores)
@@ -398,7 +355,7 @@ get_joint_scores <- function(blocks, block_svd, initial_signal_ranks, sv_thresho
 
             block_wedin_samples <- matrix(NA, K, n_wedin_samples)
 
-            for(k in 1:K){
+            for(k in seq_len(K)){
                 block_wedin_samples[k, ] <- get_wedin_bound_samples(X=blocks[[k]],
                                                                     SVD=block_svd[[k]],
                                                                     signal_rank=initial_signal_ranks[k],
@@ -444,28 +401,28 @@ get_joint_scores <- function(blocks, block_svd, initial_signal_ranks, sv_thresho
     # estimate joint score space ------------------------------------
 
     if(joint_rank_estimate >= 1){
-        joint_scores <- M_svd[['u']][ , 1:joint_rank_estimate, drop=FALSE]
+        joint_scores <- M_svd[['u']][ , seq_len(joint_rank_estimate), drop=FALSE]
 
         # reconsider joint score space ------------------------------------
         # remove columns of joint_scores that have a
         # trivial projection from one of the data matrices
 
         to_remove <- c()
-        for(k in 1:K){
-            for(j in 1:joint_rank_estimate){
+        for(k in seq_len(K)){
+            for(j in seq_len(joint_rank_estimate)){
 
                 score <- t(blocks[[k]]) %*% joint_scores[ , j]
                 sv <- norm(score)
 
                 if(sv < sv_thresholds[[k]]){
-                    print(paste('removing column', j))
+                    glue::glue(paste('removing column', j))
                     to_remove <- c(to_remove, j)
                     break
                 }
             }
 
         }
-        to_keep <- setdiff(1:joint_rank_estimate, to_remove)
+        to_keep <- setdiff(seq_len(joint_rank_estimate), to_remove)
         joint_rank <- length(to_keep)
         joint_scores <- joint_scores[ , to_keep, drop=FALSE]
     } else {
@@ -476,15 +433,11 @@ get_joint_scores <- function(blocks, block_svd, initial_signal_ranks, sv_thresho
     list(joint_scores=joint_scores, rank_sel_results=rank_sel_results)
 }
 
-#' Computes the final JIVE decomposition.
-#'
-#' Computes X = J + I + E for a single data block and the respective SVDs.
-#'
-#'
-#' @param X Matrix. The original data matrix.
-#' @param joint_scores Matrix. The basis of the joint space (dimension n x joint_rank).
-#' @param sv_threshold Numeric vector. The singular value thresholds from the initial signal rank estimates.
-#' @param full Boolean. Do we compute the full J, I matrices or just the SVDs (set to FALSE to save memory)..
+## Computes the final JIVE decomposition.
+##
+## Computes X = J + I + E for a single data block and the respective SVDs.
+##
+
 get_final_decomposition <- function(X, joint_scores, sv_threshold, full=TRUE){
 
     jive_decomposition <- list()
@@ -502,12 +455,9 @@ get_final_decomposition <- function(X, joint_scores, sv_threshold, full=TRUE){
     jive_decomposition
 }
 
-#' Computes the individual matix for a data block.
-#'
-#' @param X Matrix. The original data matrix.
-#' @param joint_scores Matrix. The basis of the joint space (dimension n x joint_rank).
-#' @param sv_threshold Numeric vector. The singular value thresholds from the initial signal rank estimates.
-#' @param full Boolean. Do we compute the full J, I matrices or just the SVD (set to FALSE to save memory).
+## Computes the individual matix for a data block.
+##
+
 get_individual_decomposition <- function(X, joint_scores, sv_threshold, full=TRUE){
 
     if(any(is.na(joint_scores))){
@@ -532,12 +482,10 @@ get_individual_decomposition <- function(X, joint_scores, sv_threshold, full=TRU
     indiv_decomposition
 }
 
-#' Computes the joint matix for a data block.
-#'
-#'
-#' @param X Matrix. The original data matrix.
-#' @param joint_scores Matrix. The basis of the joint space (dimension n x joint_rank).
-#' @param full Boolean. Do we compute the full J, I matrices or just the SVD (set to FALSE to save memory).
+## Computes the joint matix for a data block.
+##
+##
+
 get_joint_decomposition <- function(X, joint_scores, full=TRUE){
 
     if(any(is.na(joint_scores))){
@@ -561,16 +509,12 @@ get_joint_decomposition <- function(X, joint_scores, full=TRUE){
 }
 
 
-#' Singluar Value Decomposition.
-#'
-#' Returns a possibly truncated SVD of a data matrix.
-#'
-#' Wraps the svd function. Removes the extra singluar values if a truncated svd is computed.
-#'
-#' @param X Matrix.
-#' @param rank Integer. Rank of the desired SVD (optional). If rank==0 returns zeros.
-#'
-#' @return The SVD of X.
+## Singluar Value Decomposition.
+##
+## Returns a possibly truncated SVD of a data matrix.
+##
+## Wraps the svd function. Removes the extra singluar values if a truncated svd is computed.
+
 get_svd <- function(X, rank=NULL){
     # SVD <- get_svd(X, rank=2)
 
@@ -586,7 +530,7 @@ get_svd <- function(X, rank=NULL){
 
     } else{
         decomposition <- svd(X, nu=rank, nv=rank)
-        decomposition[['d']] <- decomposition[['d']][1:rank]
+        decomposition[['d']] <- decomposition[['d']][seq_len(rank)]
         decomposition
     }
 
@@ -594,15 +538,11 @@ get_svd <- function(X, rank=NULL){
 
 
 
-#' Truncates an SVD.
-#'
-#' Removes columns from the U, D, V matrix computed form an SVD.
-#'
-#'
-#' @param decomposition List. List with entries 'u', 'd', and 'v'from the svd function.
-#' @param rank List. List with entries 'u', 'd', and 'v'from the svd function.
-#'
-#' @return The trucated SVD of X.
+## Truncates an SVD.
+##
+## Removes columns from the U, D, V matrix computed form an SVD.
+##
+
 truncate_svd <- function(decomposition, rank){
 
     if(rank==0){
@@ -612,29 +552,27 @@ truncate_svd <- function(decomposition, rank){
         decomposition[['d']] <- 0
         decomposition[['v']] <- matrix(0, ncol=1, nrow=d)
     }else{
-        decomposition[['u']] <- decomposition[['u']][, 1:rank, drop=FALSE]
-        decomposition[['d']] <- decomposition[['d']][1:rank]
-        decomposition[['v']] <- decomposition[['v']][, 1:rank, drop=FALSE]
+        decomposition[['u']] <- decomposition[['u']][, seq_len(rank), drop=FALSE]
+        decomposition[['d']] <- decomposition[['d']][seq_len(rank)]
+        decomposition[['v']] <- decomposition[['v']][, seq_len(rank), drop=FALSE]
     }
 
     decomposition
 }
 
 
-#' Reconstruces the original matrix from its SVD.
-#'
-#' Computes UDV^T to get the approximate (or full) X matrix.
-#'
-#' @param decomposition List. List with entries 'u', 'd', and 'v'from the svd function.
-#'
-#' @return Matrix. The original matrix.
+## Reconstruces the original matrix from its SVD.
+##
+## Computes UDV^T to get the approximate (or full) X matrix.
+##
+
 svd_reconstruction <- function(decomposition){
 
     # decomposition rank -- need to truncated singluar values
     r <- dim(decomposition[['u']])[2]
 
     decomposition[['u']]  %*%
-        diag(decomposition[['d']][1:r], nrow=r, ncol=r) %*%
+        diag(decomposition[['d']][seq_len(r)], nrow=r, ncol=r) %*%
         t(decomposition[['v']])
 
 }
@@ -645,9 +583,9 @@ get_random_direction_bound <- function(n_obs, dims, num_samples=1000){
 
     n_blocks <- length(dims)
     rand_dir_samples <- rep(0, num_samples)
-    for(s in 1:num_samples){
+    for(s in seq_len(num_samples)){
         rand_subspaces <- list()
-        for(b in 1:n_blocks){
+        for(b in seq(n_blocks)){
             X <- matrix(stats::rnorm(n_obs * dims[b], mean=0,sd=1), n_obs, dims[b])
             U <- get_svd(X)[['u']]
 
@@ -669,13 +607,13 @@ get_random_direction_bound <- function(n_obs, dims, num_samples=1000){
 get_wedin_bound_samples <- function(X, SVD, signal_rank, num_samples=1000){
 
     # resample for U and V
-    U_perp <- SVD[['u']][ , -(1:signal_rank)]
+    U_perp <- SVD[['u']][ , -(seq_len(signal_rank))]
     U_sampled_norms <- wedin_bound_resampling(X=X,
                                               perp_basis=U_perp,
                                               right_vectors=FALSE,
                                               num_samples=num_samples)
 
-    V_perp <- SVD[['v']][ , -(1:signal_rank)]
+    V_perp <- SVD[['v']][ , -(seq_len(signal_rank))]
     V_sampled_norms <- wedin_bound_resampling(X=X,
                                               perp_basis=V_perp,
                                               right_vectors=TRUE,
@@ -688,18 +626,15 @@ get_wedin_bound_samples <- function(X, SVD, signal_rank, num_samples=1000){
 }
 
 
-#' Resampling procedure for the wedin bound
-#'
-#' @param X Matrix. The data matrix.
-#' @param perp_basis Matrix. Either U_perp or V_perp: the remaining left/right singluar vectors of X after estimating the signal rank.
-#' @param right_vectors Boolean. Right multiplication or left multiplication.
-#' @param num_samples Integer. Number of vectors selected for resampling procedure.
+## Resampling procedure for the wedin bound
+##
+
 wedin_bound_resampling <- function(X, perp_basis, right_vectors, num_samples=1000){
 
     rank <- dim(perp_basis)[2]
     resampled_norms <- rep(0, num_samples)
 
-    for(s in 1:num_samples){
+    for(s in seq_len(num_samples)){
 
         sampled_col_index <- sample.int(n=dim(perp_basis)[2],
                                         size=rank,
@@ -722,34 +657,21 @@ wedin_bound_resampling <- function(X, perp_basis, right_vectors, num_samples=100
     resampled_norms
 }
 
-#' Returns the common normalized scores.
-#'
-#' Represents the joint signal among the data blocks.
-#'
-#' @param ajive_output Output from the ajive function.
-#'
-#' @return A matrix of dimension n x joint-rank that is a basis of the joint space.
-#'
-#' 
+## Returns the common normalized scores.
+##
+## Represents the joint signal among the data blocks.
+##
+
 get_common_normalized_scores <- function(ajive_output){
     ajive_output[['joint_scores']]
 }
 
-#' Angle based Joint and Individual Variation Explained
-#'
-#' Computes the JIVE decomposition.
-#'
-#' @param blocks List. A list of the data matrices.
-#' @param initial_signal_ranks Vector. The initial signal rank estimates.
-#' @param full Boolean. Whether or not to store the full J, I, E matrices or just their SVDs (set to FALSE to save memory).
-#' @param n_wedin_samples Integer. Number of wedin bound samples to draw for each data matrix.
-#' @param n_rand_dir_samples Integer. Number of random direction bound samples to draw.
-#' @param joint_rank Integer or NA. User specified joint_rank. If NA will be estimated from data.
-
-#' @return The JIVE decomposition.
-#'
-#'
-#' 
+## Angle based Joint and Individual Variation Explained
+##
+## Computes the JIVE decomposition.
+##
+##
+## 
 ajive <- function(blocks, initial_signal_ranks, full=TRUE, n_wedin_samples=1000, n_rand_dir_samples=1000, joint_rank=NA){
 
     K <- length(blocks)
@@ -758,7 +680,7 @@ ajive <- function(blocks, initial_signal_ranks, full=TRUE, n_wedin_samples=1000,
         stop('ajive expects at least two data matrices.')
     }
 
-    if(sum(sapply(blocks,function(X) any(is.na(X)))) > 0){
+    if(sum(vapply(blocks, function(X) any(is.na(X)), logical(1))) > 0){
         stop('Some of the blocks has missing data -- ajive expects full data matrices.')
     }
 
@@ -772,7 +694,7 @@ ajive <- function(blocks, initial_signal_ranks, full=TRUE, n_wedin_samples=1000,
 
     block_svd <- list()
     sv_thresholds <- rep(0, K)
-    for(k in 1:K){
+    for(k in seq_len(K)){
 
         block_svd[[k]] <- get_svd(blocks[[k]])
 
@@ -797,7 +719,7 @@ ajive <- function(blocks, initial_signal_ranks, full=TRUE, n_wedin_samples=1000,
     # step 3: final decomposition -----------------------------------------------------
 
     block_decomps <- list()
-    for(k in 1:K){
+    for(k in seq_len(K)){
         block_decomps[[k]] <- get_final_decomposition(X=blocks[[k]],
                                                       joint_scores=joint_scores,
                                                       sv_threshold=sv_thresholds[k])

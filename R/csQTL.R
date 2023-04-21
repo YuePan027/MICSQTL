@@ -5,11 +5,13 @@
 #' This is a function developed to implement cell-type-specific differential expression using `TOAST`.
 #'
 #' @param se A `SummarizedExperiment` object with bulk protein expression data frame contained in `counts` slot.
-#' The information from genetic variants should be stored in a P (the number of SNP) by N (the number of samples, should match the sample in `counts` slot) matrix contained as an element (`SNP_data`) in `metadata` slot.
+#' The information from genetic variants should be stored in a P (the number of SNP) by N (the number of samples, 
+#' should match the sample in `counts` slot) matrix contained as an element (`SNP_data`) in `metadata` slot.
 #' Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
 #' The annotations of these SNP should be stored as an element (`anno_SNP`) in `metadata` slot.
 #' It should include at least the following columns: "CHROM" (which chromosome the SNP is on),
-#' "POS" (position of that SNP) and "ID" (a unique identifier for each SNP, usually a combination of chromosome and its position).
+#' "POS" (position of that SNP) and "ID" (a unique identifier for each SNP, usually a combination of chromosome and 
+#' its position).
 #' The information on cellular composition is required and stored as `prop` in `metadata` slot.
 #' It is an N (the number of samples, should match the sample in `counts` slot) by K (the number of cell types) matrix.
 #' This can be obtained by running `deconv()` before any filtering steps, or use any source data directly.
@@ -25,22 +27,28 @@
 #' @importFrom purrr map
 #'
 #' @export
-#'
+#' 
+#' @examples 
+#' se <- SummarizedExperiment(assays = list(protein = MICSQTL::protein_data),rowData = MICSQTL::anno_protein)
+#' metadata(se) <- list(sig_protein = MICSQTL::ref_protein, sig_gene = MICSQTL::ref_gene, gene_data = MICSQTL::gene_data, meta = MICSQTL::meta)
+#' se <- deconv(se, source='protein', method = "cibersort")
+#' se <- feature_filter(se, target_protein = target_protein, filter_method = c("allele", "distance"), filter_allele = 0.15, filter_geno = 0.05,ref_position = "TSS")  
+#' se <- csQTL(se)
 #'
 csQTL <- function(se, BPPARAM = bpparam()){
 
-  prop <- se@metadata$prop   
-  assay(se) <- as.data.frame(assay(se))
-  protein_tab <- as.data.frame(se@metadata$target_dat)
-  SNP_dat <- se@metadata$SNP_data
-  SNP_ID <- se@metadata$anno_SNP$ID
-
-  Res_TOAST <- lapply(1:length(se@metadata$choose_SNP_list), function(x){
-    test_protein <- se@metadata$choose_SNP_list[[x]]
-    protein_name <- names(se@metadata$choose_SNP_list)[x]
-    cat("csQTL test for protein", protein_name, "\n")
-
-    res <- bplapply(1:length(test_protein), function(i){
+    prop <- slot(se, "metadata")$prop   
+    assay(se) <- as.data.frame(assay(se))
+    protein_tab <- as.data.frame(slot(se, "metadata")$target_dat)
+    SNP_dat <- slot(se, "metadata")$SNP_data
+    SNP_ID <- slot(se, "metadata")$anno_SNP$ID
+    
+    Res_TOAST <- lapply(seq_len(length(slot(se, "metadata")$choose_SNP_list)), function(x){
+    test_protein <- slot(se, "metadata")$choose_SNP_list[[x]]
+    protein_name <- names(slot(se, "metadata")$choose_SNP_list)[x]
+    message("csQTL test for protein ", protein_name, "\n")
+    
+    res <- bplapply(seq_len(length(test_protein)), function(i){
       design <- data.frame(factor(SNP_dat[test_protein[i],]))#data.frame(factor(t(SNP_dat)[, test_protein[i]]))
       Design_out <- makeDesign(design, prop)
       fitted_model <- fitModel(Design_out,
@@ -53,19 +61,15 @@ csQTL <- function(se, BPPARAM = bpparam()){
     },BPPARAM=BPPARAM) %>%
       suppressWarnings() %>%
       suppressMessages()
-
-    res_df <- data.frame(matrix(unlist(lapply(1:ncol(prop), function(i){
+    
+    res_df <- data.frame(matrix(unlist(lapply(seq_len(ncol(prop)), function(i){
       unlist(map(map(res,i), "p_value"))
     })), ncol = ncol(prop)))
     colnames(res_df) <- colnames(prop)
     res_df$protein <- protein_name
     res_df$SNP <- unlist(purrr::map(res,"SNP"))
-    # res_df$min_p <- apply(res_df[, 1:ncol(se@metadata$prop)], 1, FUN = min)
-    # idx4 <- match(res_df$SNP[which(res_df$min_p < filter_TOAST)], anno_SNP$ID)
     return(res_df[, c("protein", "SNP", colnames(prop))])
-  })
-  #se@metadata$choose_SNP_list <- map(Res_TOAST, 2)
-  #res_TOAST <- map(Res_TOAST, 1)
-  se@metadata$TOAST_output <- Res_TOAST
-  return(se)
+    })
+    slot(se, "metadata")$TOAST_output <- Res_TOAST
+    return(se)
 }

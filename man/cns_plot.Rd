@@ -8,7 +8,7 @@ cns_plot(
   se,
   score = "cns_1",
   group_var = "disease",
-  scatter = F,
+  scatter = FALSE,
   scatter_x,
   scatter_y
 )
@@ -19,7 +19,8 @@ In addition, a metadata with phenotype interested and measures on the matched sa
 
 \item{score}{A character of variable name indicating which common normalized score is used for boxplot and ridge plot.}
 
-\item{group_var}{A character of variable name indicating which variable is used as the group variable to compare common normalized scores.}
+\item{group_var}{A character of variable name indicating which variable is used as the group variable to 
+compare common normalized scores.}
 
 \item{scatter}{A logical value indicating whether to make scatter plot or not. Only valid when the joint rank is at least two.}
 
@@ -33,4 +34,11 @@ The generated common normalized scores will be stored as an element (`cns`) in `
 }
 \description{
 This function is used to visualize the distribution of common normalized scores across different data sources.
+}
+\examples{
+se <- SummarizedExperiment(assays = list(protein = MICSQTL::protein_data),rowData = MICSQTL::anno_protein)
+metadata(se) <- list(sig_protein = MICSQTL::ref_protein, sig_gene = MICSQTL::ref_gene, gene_data = MICSQTL::gene_data, meta = MICSQTL::meta)
+se <- ajive_decomp(se, use_marker = TRUE)
+cns_plot(se, score = "cns_1", group_var = "disease", scatter = TRUE, scatter_x = "cns_1", scatter_y = "cns_2")
+
 }

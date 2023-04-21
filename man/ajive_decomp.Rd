@@ -8,7 +8,7 @@ ajive_decomp(
   se,
   ini_rank = c(20, 20),
   test = "gene_data",
-  use_marker = F,
+  use_marker = FALSE,
   level = "bulk"
 )
 }
@@ -41,4 +41,10 @@ It is useful when there are multiple data matrices measured on the same set of s
 It decomposes each data matrix as three parts: (1) Joint variation across data types 
 (2) Individual structured variation for each data type and (3) Residual noise. 
 Common normalized scores are one of the desirable output to explore the joint behavior that is shared by different data sources.
+}
+\examples{
+se <- SummarizedExperiment(assays = list(protein = MICSQTL::protein_data),rowData = MICSQTL::anno_protein)
+metadata(se) <- list(sig_protein = MICSQTL::ref_protein, sig_gene = MICSQTL::ref_gene, gene_data = MICSQTL::gene_data, meta = MICSQTL::meta)
+se <- ajive_decomp(se, use_marker = TRUE)
+
 }

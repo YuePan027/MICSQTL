@@ -27,38 +27,41 @@
 #'
 #' @export
 #'
-#'
+#' @examples
+#' se <- SummarizedExperiment(assays = list(protein = MICSQTL::protein_data),rowData = MICSQTL::anno_protein)
+#' metadata(se) <- list(sig_protein = MICSQTL::ref_protein, sig_gene = MICSQTL::ref_gene, gene_data = MICSQTL::gene_data, meta = MICSQTL::meta)
+#' se <- ajive_decomp(se, use_marker = TRUE)
 #'
 
 ajive_decomp <- function(se, ini_rank = c(20,20), test = "gene_data", 
-                         use_marker = F,
+                         use_marker = FALSE,
                          level = "bulk"){
     
     if(level == "bulk"){
         dat1 <- assay(se)
         if(use_marker){
-            in_use <- intersect(rownames(se@metadata$gene_data), rownames(se@metadata$sig_gene))
-            dat2 <- se@metadata[[test]][in_use, ]
+            in_use <- intersect(rownames(slot(se, "metadata")$gene_data), rownames(slot(se, "metadata")$sig_gene))
+            dat2 <- slot(se, "metadata")[[test]][in_use, ]
         } else 
-            {dat2 <- se@metadata[[test]] }
+            {dat2 <- slot(se, "metadata")[[test]] }
          
     } else{
-        dat1 <- se@metadata$TCA_deconv[[level]]
-        dat2 <- se@metadata$TCA_deconv2[[level]]
+        dat1 <- slot(se, "metadata")$TCA_deconv[[level]]
+        dat2 <- slot(se, "metadata")$TCA_deconv2[[level]]
     }
     
     if (!all(colnames(dat1) == colnames(dat2))){
         stop("Samples in the first data do not match that in the second data")
     }
 
-    blocks_test <- list(scale(t(dat1), center = TRUE, scale = F),
-                        scale(t(dat2), center = TRUE, scale = F))
+    blocks_test <- list(scale(t(dat1), center = TRUE, scale = FALSE),
+                        scale(t(dat2), center = TRUE, scale = FALSE))
     ajive_res <- ajive(blocks_test, ini_rank)
-    se@metadata$ajive_res <- ajive_res
+    slot(se, "metadata")$ajive_res <- ajive_res
     cns <- get_common_normalized_scores(ajive_res)
-    se@metadata$cns <- cns
+    slot(se, "metadata")$cns <- cns
     joint_rank <- ajive_res$joint_rank
-    se@metadata$joint_rank <- joint_rank
+    slot(se, "metadata")$joint_rank <- joint_rank
     return(se)
 
 }
@@ -72,7 +75,8 @@ ajive_decomp <- function(se, ini_rank = c(20,20), test = "gene_data",
 #' @param se A `SummarizedExperiment` object with common normalized scores stored as an element (`cns`) in `metadata` slot.
 #' In addition, a metadata with phenotype interested and measures on the matched samples (as in assay) is required.
 #' @param score A character of variable name indicating which common normalized score is used for boxplot and ridge plot.
-#' @param group_var A character of variable name indicating which variable is used as the group variable to compare common normalized scores.
+#' @param group_var A character of variable name indicating which variable is used as the group variable to 
+#' compare common normalized scores.
 #' @param scatter A logical value indicating whether to make scatter plot or not. Only valid when the joint rank is at least two.
 #' @param scatter_x A character of variable name indicating which common normalized scores on horizontal axis.
 #' @param scatter_y A character of variable name indicating which common normalized scores on vertical axis.
@@ -87,13 +91,17 @@ ajive_decomp <- function(se, ini_rank = c(20,20), test = "gene_data",
 #'
 #' @export
 #'
-#'
+#' @examples
+#' se <- SummarizedExperiment(assays = list(protein = MICSQTL::protein_data),rowData = MICSQTL::anno_protein)
+#' metadata(se) <- list(sig_protein = MICSQTL::ref_protein, sig_gene = MICSQTL::ref_gene, gene_data = MICSQTL::gene_data, meta = MICSQTL::meta)
+#' se <- ajive_decomp(se, use_marker = TRUE)
+#' cns_plot(se, score = "cns_1", group_var = "disease", scatter = TRUE, scatter_x = "cns_1", scatter_y = "cns_2")
 #'
 cns_plot <- function(se, score = "cns_1", group_var = "disease",
-                     scatter = F, scatter_x, scatter_y){
-    cns <- se@metadata$cns
-    colnames(cns) <- paste("cns", 1:ncol(cns), sep = "_")
-    df <- data.frame(cns, se@metadata$meta)
+                     scatter = FALSE, scatter_x, scatter_y){
+    cns <- slot(se, "metadata")$cns
+    colnames(cns) <- paste("cns", seq_len(ncol(cns)), sep = "_")
+    df <- data.frame(cns, slot(se, "metadata")$meta)
 
     p1 <- ggplot(df,
                  aes(x = .data[[group_var]], y = .data[[score]], fill = .data[[group_var]])) +
@@ -116,11 +124,11 @@ cns_plot <- function(se, score = "cns_1", group_var = "disease",
         xlab(score)
     
     if (ncol(cns) < 2 & scatter){
-        cat("The scatter plot is not supported since joint rank is smaller than 2")
+        message("The scatter plot is not supported since joint rank is smaller than 2")
     }
 
     if(ncol(cns) < 2 | !scatter){
-        return(ggpubr::ggarrange(p1, p2, ncol = 2, nrow = 1, common.legend = T))
+        return(ggpubr::ggarrange(p1, p2, ncol = 2, nrow = 1, common.legend = TRUE))
     } else if (scatter){
         p3 <- ggplot(df,
                      aes(x = .data[[scatter_x]], y = .data[[scatter_y]],
@@ -128,7 +136,7 @@ cns_plot <- function(se, score = "cns_1", group_var = "disease",
             geom_point() +
             scale_point_color_hue(l = 40) +
             theme_classic()
-        return(ggpubr::ggarrange(p1, p2, p3, ncol = 2, nrow = 2, common.legend = T))
+        return(ggpubr::ggarrange(p1, p2, p3, ncol = 2, nrow = 2, common.legend = TRUE))
     }
 
 

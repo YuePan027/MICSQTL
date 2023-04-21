@@ -81,11 +81,3 @@
 #' A data frame with 127 rows (sample) and 2 columns (disease status and gender).
 "meta"
 
-
-#' Deconvoluted proportion based on gene expression
-#'
-#' Cell-type proportion estimates from gene expression
-#'
-#' @format ## `prop_gene`
-#' A data frame of cell-type proportion estimates for each sample based on RNA-seq expression.
-"prop_gene"

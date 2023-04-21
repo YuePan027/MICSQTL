@@ -28,6 +28,9 @@ deconv <- function(se,
   assay(se) <- as.data.frame(assay(se))
 
   in_use <- intersect(rownames(assay(se)), rownames(se@metadata$sig_protein))
+  if (any(length(in_use) == 0)) {
+      stop("None of the feaures in 'signature matrix' exist in bulk expression data.")
+  }
   protein_sub <- as.data.frame(assay(se)[in_use, , drop=F])
   sig_protein <- se@metadata$sig_protein[in_use, , drop=F]
   
@@ -51,6 +54,9 @@ deconv <- function(se,
     
   if(source=='transcript'){
       in_use <- intersect(rownames(se@metadata$gene_data), rownames(se@metadata$sig_gene))
+      if (any(length(in_use) == 0)) {
+          stop("None of the feaures in 'signature matrix' exist in bulk expression data.")
+      }
       gene_sub <- as.data.frame(se@metadata$gene_data [in_use, , drop=F])
       sig_gene <- se@metadata$sig_gene[in_use, , drop=F]
       
@@ -75,6 +81,9 @@ deconv <- function(se,
     
   if(source=='cross'){
       in_use <- intersect(rownames(se@metadata$gene_data), rownames(se@metadata$sig_gene))
+      if (any(length(in_use) == 0)) {
+          stop("None of the feaures in 'signature matrix' exist in bulk expression data.")
+      }
       gene_sub <- as.data.frame(se@metadata$gene_data[in_use, , drop=F])
       sig_gene <- se@metadata$sig_gene[in_use, , drop=F]
       

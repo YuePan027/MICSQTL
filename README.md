@@ -1,7 +1,6 @@
 MICSQTL: Multi-omic deconvolution, Integration and Cell-type-specific
 Quantitative Trait Loci
 ================
-truetrue
 
 # Introduction
 

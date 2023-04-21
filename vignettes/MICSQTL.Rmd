@@ -16,8 +16,6 @@ abstract: >
   MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by borrowing information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci mapping at cellular resolution.
 ---
 
-![MICSQTL workflow.](fig1.PNG)
-
 
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
@@ -25,6 +23,14 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
+# Introduction
+
+Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to estimate cellular composition in the matched bulk proteomes. The expression of genes and proteins at either bulk level or cell type level can be integrated by Angle-based Joint and Individual Variation Explained (AJIVE) framework. Meanwhile, `MICSQTL` can perform cell-type-specic quantitative trait loci (QTL) mapping to proteins or transcripts based on the input of bulk expression data and the estimated cellular composition per molecule type, without the need for single cell sequencing.  We use matched transcriptome-proteome from human brain frontal cortex tissue samples to demonstrate the input and output of our tool. 
+
+![MICSQTL workflow.](fig1.PNG)
+
+
 
 # Install
 

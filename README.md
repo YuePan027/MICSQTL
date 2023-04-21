@@ -23,8 +23,8 @@ tool.
 
 ``` r
 # Install
-#options(download.file.method = "wininet")
-#devtools::install_github("YuePan027/MICSQTL")
+options(download.file.method = "wininet")
+devtools::install_github("YuePan027/MICSQTL")
 library(MICSQTL)
 packages <- c("GGally", "reshape2", "ggplot2", "RColorBrewer")
 # Check if packages are installed, and if not, install them
@@ -319,12 +319,10 @@ that the protein or gene expression is different among the sample from
 different genotype groups.
 
 ``` r
-system.time(se <- csQTL(se))
+se <- csQTL(se)
 #> csQTL test for protein ABCA1 
 #> csQTL test for protein ABCA2 
 #> csQTL test for protein AGTPBP1
-#>    user  system elapsed 
-#>    1.89    0.96  173.63
 ```
 
 We can check the results from csQTL analysis for one of target proteins:

@@ -24,19 +24,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Introduction
 
-In clinical samples, the observed bulk sequencing/microarray data are often a mixture of different cell types. Because each unique cell type has its own gene expression profile, the real sequencing/microarray data are the weighted average of signals from multiple pure cell types. In high-throughput data analysis, the mixing proportions will confound with the primary phenotype-of-interest, if not properly accounted for. Over the past several years, researchers have gained substantial interests in using computational methods to deconvolute cell compositions. Under the assumption of a commonly shared feature-by-cell-type reference panel across all samples, deconvolution methods were developed. However, this assumption may not hold. For example, when repeated samples are measured for each subject, assuming a shared reference panel across different time points for each subject is a preferred choice over assuming a shared one across all the samples.
-
-Here, we developed a method called `ISLET` (Individual-Specific ceLl typE referencing Tool), to solve for the individual-specific and cell-type-specific reference panels, once the cell type proportions are given. `ISLET` can leverage on multiple observations or temporal measurements of the same subject. `ISLET` adopted a more reasonable assumption that repeated samples from the same subject would share the same reference panel. This unknown **subject-specific** panel, treated as missing values, are modeled by Gaussian distribution in the mixed-effect regression framework and estimated by an iterative Expectation--Maximization (EM) algorithm, when combining all samples from all subjects together. This is the first statistical framework to estimate the subject-level cell-type-specific reference panel, for repeated measures. Our modeling can effectively borrow information across samples within the same subject. `ISLET` can deconvolve reference panels based on the raw counts without batch effect in library size or the normalized counts such as Transcript Per Million (TPM). In the current version, `ISLET` performs cell-type-specific differential expression analysis for two groups of subjects. Other covariates and additional groups will be added in future versions.
-
-![MICSQTL workflow.](fig1.PNG)
-
-`ISLET` depends on the following packages:
-
--   `r Biocpkg("BiocParallel")`, for parallel computing implementation,
--   `r CRANpkg("Matrix")`, for large matrices operations in *R*,
--   `r Biocpkg("SummarizedExperiment")`, to store rectangular matrices of experimental results.
 
 
 # Install

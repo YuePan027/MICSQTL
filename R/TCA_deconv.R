@@ -22,11 +22,11 @@
 TCA_deconv <- function(se, test = "array", prop){
     if(test == "array"){
         res_tca <- TCA::tca(X = as.matrix(assay(se)),
-                            W = se@metadata$prop,
+                            W = prop,
                             refit_W = FALSE,
                             verbose = FALSE)
         res_full <- TCA::tensor(tca.mdl = res_tca, X = as.matrix(assay(se)))
-        names(res_full) <- colnames(se@metadata$prop)
+        names(res_full) <- colnames(prop)
         se@metadata$TCA_deconv <- res_full
     } else{
         res_tca <- TCA::tca(X = se@metadata[[test]],

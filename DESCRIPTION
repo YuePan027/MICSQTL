@@ -1,9 +1,9 @@
-Package: mcQTL
+Package: MICSQTL
 Type: Package
-Title: Multi-omic and Cell-type-specific Quantitative Trait Loci
+Title: MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci)
 Version: 0.1.0
 Author: Authors@R: c(
-    person("Yue", "Pan", email = "yuep027@gmail.com", role = c("aut", "cre")),
+    person("Yue", "Pan", email = "Yue.Pan@STJUDE.ORG", role = c("aut", "cre")),
     person("Qian", "Li", email = "Qian.Li@STJUDE.ORG", role = c("aut"))
 Maintainer: Yue Pan <yuep027@gmail.com>
 Description: A tool that estimates cell type proportions in bulk proteomes by either using single data source reference or borrowing information in matched transcriptomes. Based on the deconvoluted cellular composition, mcQTL further performs Quantitative Trait Loci mapping at cellular resolution, as well as integrates and visualizes multi-source profiles at bulk and cell type levels.
@@ -17,7 +17,6 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 biocViews:
 Imports: 
-    testthat,
     TCA,
     nnls,
     e1071,
@@ -33,6 +32,8 @@ Imports:
     ggridges
 Depends: 
     R (>= 3.0),
-    SummarizedExperiment
+    SummarizedExperiment,
+    stats
 RoxygenNote: 7.2.1
 LazyData: true
+LazyDataCompression: xz

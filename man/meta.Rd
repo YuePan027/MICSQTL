@@ -6,7 +6,7 @@
 \title{Metadata}
 \format{
 ## `meta`
-A data frame with 100 rows (sample) and 2 columns (disease status and gender).
+A data frame with 127 rows (sample) and 2 columns (disease status and gender).
 }
 \usage{
 meta

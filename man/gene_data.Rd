@@ -6,7 +6,7 @@
 \title{Example gene expression data}
 \format{
 ## `gene_data`
-A data frame with 2000 rows (genes) and 100 columns (sample).
+A data frame with 10000 rows (genes) and 127 columns (sample).
 }
 \usage{
 gene_data

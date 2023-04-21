@@ -1,4 +1,4 @@
 library(testthat)
-library(scpoisson)
+library(MICSQTL)
 
-test_check("mcQTL")
+test_check("MICSQTL")

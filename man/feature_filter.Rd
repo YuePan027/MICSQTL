@@ -59,13 +59,3 @@ This function returns a `SummarizedExperiment` object including SNPs used to tes
 \details{
 This is a function developed to implement cell-type proportion deconvolution using either `CIBERSORT` or `nnls`.
 }
-\examples{
-
-se <- SummarizedExperiment(assays = list(counts = mcQTL::protein_data),
-                           rowData = mcQTL::anno_protein)
-se@metadata <- list(SNP_data = mcQTL::SNP_data, anno_SNP = mcQTL::anno_SNP)
-se <- feature_filter(se, target_protein = c("Protein_5", "Protein_6"),
-                     filter_method = c("allele"))
-
-
-}

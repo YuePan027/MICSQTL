@@ -16,7 +16,7 @@ ajive_decomp(
 \item{se}{A `SummarizedExperiment` object with bulk expression data frame contained in `counts` slot.
 In addition, data measured on the same set of samples in `metadata` slot is required.}
 
-\item{ini_rank}{A vector with each element corresponds to a initial signal rank for AJIVE decomposition. 
+\item{ini_rank}{A vector with each element corresponds to a initial signal rank for AJIVE decomposition.
 Please refer to the original paper (Feng, Qing, et al. "Angle-based joint and individual variation explained." Journal of multivariate analysis 166 (2018): 241-265.)
 on the choice of initial ranks.}
 
@@ -24,7 +24,7 @@ on the choice of initial ranks.}
 
 \item{use_marker}{If TRUE, only markers contained in `sig_gene` are used.}
 
-\item{level}{A character string indicate if the integrative analysis should be done at cell type specific level and 
+\item{level}{A character string indicate if the integrative analysis should be done at cell type specific level and
 which cell type should be used. By default, the integrative analysis is done at bulk level.}
 }
 \value{
@@ -36,15 +36,14 @@ This function returns a `SummarizedExperiment` object including results from AJI
 an integrative analysis tool and common normalized scored based on it.
 }
 \details{
-This implemented the AJIVE algorithm an integrative analysis method. 
+This implemented the AJIVE algorithm an integrative analysis method.
 It is useful when there are multiple data matrices measured on the same set of samples.
-It decomposes each data matrix as three parts: (1) Joint variation across data types 
-(2) Individual structured variation for each data type and (3) Residual noise. 
+It decomposes each data matrix as three parts: (1) Joint variation across data types
+(2) Individual structured variation for each data type and (3) Residual noise.
 Common normalized scores are one of the desirable output to explore the joint behavior that is shared by different data sources.
 }
 \examples{
-se <- SummarizedExperiment(assays = list(protein = MICSQTL::protein_data),rowData = MICSQTL::anno_protein)
-metadata(se) <- list(sig_protein = MICSQTL::ref_protein, sig_gene = MICSQTL::ref_gene, gene_data = MICSQTL::gene_data, meta = MICSQTL::meta)
+data(se)
 se <- ajive_decomp(se, use_marker = TRUE)
 
 }

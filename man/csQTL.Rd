@@ -8,12 +8,12 @@ csQTL(se, BPPARAM = bpparam())
 }
 \arguments{
 \item{se}{A `SummarizedExperiment` object with bulk protein expression data frame contained in `counts` slot.
-The information from genetic variants should be stored in a P (the number of SNP) by N (the number of samples, 
+The information from genetic variants should be stored in a P (the number of SNP) by N (the number of samples,
 should match the sample in `counts` slot) matrix contained as an element (`SNP_data`) in `metadata` slot.
 Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
 The annotations of these SNP should be stored as an element (`anno_SNP`) in `metadata` slot.
 It should include at least the following columns: "CHROM" (which chromosome the SNP is on),
-"POS" (position of that SNP) and "ID" (a unique identifier for each SNP, usually a combination of chromosome and 
+"POS" (position of that SNP) and "ID" (a unique identifier for each SNP, usually a combination of chromosome and
 its position).
 The information on cellular composition is required and stored as `prop` in `metadata` slot.
 It is an N (the number of samples, should match the sample in `counts` slot) by K (the number of cell types) matrix.
@@ -31,10 +31,9 @@ This function returns a `SummarizedExperiment` object including csQTL proteins b
 This is a function developed to implement cell-type-specific differential expression using `TOAST`.
 }
 \examples{
-se <- SummarizedExperiment(assays = list(protein = MICSQTL::protein_data),rowData = MICSQTL::anno_protein)
-metadata(se) <- list(sig_protein = MICSQTL::ref_protein, sig_gene = MICSQTL::ref_gene, gene_data = MICSQTL::gene_data, meta = MICSQTL::meta)
-se <- deconv(se, source='protein', method = "cibersort")
-se <- feature_filter(se, target_protein = target_protein, filter_method = c("allele", "distance"), filter_allele = 0.15, filter_geno = 0.05,ref_position = "TSS")  
+data(se)
+se <- deconv(se, source = "protein", method = "cibersort")
+se <- feature_filter(se, target_protein = target_protein, filter_method = c("allele", "distance"), filter_allele = 0.15, filter_geno = 0.05, ref_position = "TSS")
 se <- csQTL(se)
 
 }

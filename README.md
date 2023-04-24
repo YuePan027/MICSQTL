@@ -1,6 +1,7 @@
 MICSQTL: Multi-omic deconvolution, Integration and Cell-type-specific
 Quantitative Trait Loci
 ================
+truetrue
 
 # Introduction
 
@@ -16,23 +17,19 @@ sequencing. We use matched transcriptome-proteome from human brain
 frontal cortex tissue samples to demonstrate the input and output of our
 tool.
 
-![MICSQTL workflow.](./vignettes/fig1.PNG)
+![MICSQTL workflow.](fig1.PNG)
 
-# Install
+## Install
 
 ``` r
 # Install
-options(download.file.method = "wininet")
-devtools::install_github("YuePan027/MICSQTL")
+# options(download.file.method = "wininet")
+# devtools::install_github("YuePan027/MICSQTL")
 library(MICSQTL)
-packages <- c("GGally", "reshape2", "ggplot2", "RColorBrewer")
-# Check if packages are installed, and if not, install them
-for (package in packages) {
-  if (!require(package, character.only = TRUE)) {
-    install.packages(package)
-    library(package, character.only = TRUE)
-  }
-}
+library(reshape2)
+library(RColorBrewer)
+library(GGally)
+library(ggplot2)
 ```
 
 # Quick start
@@ -44,13 +41,43 @@ reference of known cell type markers contained as an element in
 important marker proteins or genes in the signature matrix to obtain
 more reliable results.
 
+In this package, we provide an example `SummarizedExperiment` object
+containing the following elements:
+
+In this package, we provide an example `SummarizedExperiment` object
+containing the following elements:
+
+-   protein_data: A subset of proteomic data PsychENCODE with 2242 rows
+    (protein) and 127 columns (sample).
+
+-   anno_protein: A data frame with 2242 rows and 4 columns (Chr, Start,
+    End, Symbol) as annotations of each protein from `protein_data`.
+
+-   ref_protein: A signature matrix with 2242 rows (protein) and 4
+    columns (cell types), which serves as a reference of known cellular
+    signatures.
+
+-   gene_data: A data frame with 2867 rows (genes) and 127 columns
+    (sample).
+
+-   ref_gene: A signature matrix with 4872 rows (genes) and 5 columns
+    (cell types), which serves as a reference of known cellular
+    signatures.
+
+-   SNP_data: A sparse matrix with 2000 rows (SNP), which stores the
+    information of genetic variants at each location from one chromosome
+    and 127 columns (sample, should match the sample in `protein_data`).
+    Each matrix entry corresponds to the genotype group indicator (0, 1
+    or 2) for a sample at a genetic location.
+
+-   anno_SNP: A data frame with 2000 rows and 3 columns (CHROM, POS,
+    ID), which stores Annotations of each SNP from `SNP_data`.
+
+-   meta:A data frame with 127 rows (sample) and 2 columns (disease
+    status and gender) as metadata.
+
 ``` r
-se <- SummarizedExperiment(assays = list(protein = MICSQTL::protein_data),
-                           rowData = MICSQTL::anno_protein)
-metadata(se) <- list(sig_protein = MICSQTL::ref_protein,
-                     sig_gene = MICSQTL::ref_gene, 
-                     gene_data = MICSQTL::gene_data,
-                     meta = MICSQTL::meta)
+data(se)
 ```
 
 ## Cell-type proportion deconvolution
@@ -61,7 +88,7 @@ In this current version, only `CIBERSORT` and `nnls` are supported as
 single-source deconvolution methods.
 
 ``` r
-se <- deconv(se, source='protein', method = "cibersort")
+se <- deconv(se, source = "protein", method = "cibersort")
 ```
 
 This step might take a while if there are many features in the signature
@@ -69,7 +96,7 @@ matrix. The cell-type proportion estimates for each sample will be
 stored as an element (`prop`) in `metadata` slot.
 
 ``` r
-head(se@metadata$prop)
+head(slot(se, "metadata")$prop)
 #>               Astro      Micro    Neuron     Oligo
 #> 2014_2194 0.1859424 0.06142760 0.6216158 0.1310142
 #> 2014_2195 0.2041841 0.10161331 0.5915177 0.1026848
@@ -79,7 +106,7 @@ head(se@metadata$prop)
 #> 2015_1    0.2070628 0.10253712 0.5513774 0.1390227
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
 Alternatively, if there are cell-type proportion estimates results
 generated using other methods or obtained from other sources, just save
@@ -97,56 +124,56 @@ protein proportions by borrowing information from deconvoluted
 transcriptomes.
 
 ``` r
-se <- deconv(se, source='cross', method = "cibersort")
-#> INFO [2023-04-21 12:39:38] Starting tca...
-#> INFO [2023-04-21 12:39:38] Validating input...
-#> INFO [2023-04-21 12:39:38] Starting re-estimation of W...
-#> INFO [2023-04-21 12:39:38] Performing feature selection using refactor...
-#> INFO [2023-04-21 12:39:38] Starting refactor...
-#> INFO [2023-04-21 12:39:38] Running PCA on X using rand_svd == TRUE...
-#> INFO [2023-04-21 12:39:38] Computing a low rank approximation of X...
-#> INFO [2023-04-21 12:39:38] Calculating the distance of each feature from its low rank approximation...
-#> INFO [2023-04-21 12:39:38] Computing the ReFACTor components based on the top 1345 features with lowest distances...
-#> INFO [2023-04-21 12:39:38] Finished refactor.
-#> INFO [2023-04-21 12:39:38] Fitting the TCA model using the selected features for re-estimating W...
-#> INFO [2023-04-21 12:39:38] Iteration 1 out of 10 external iterations (fitting all parameters including W)...
-#> INFO [2023-04-21 12:39:38] Fitting means and variances...
-#> INFO [2023-04-21 12:39:38] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:39] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:39] Internal loop converged.
-#> INFO [2023-04-21 12:39:39] Fitting W...
-#> INFO [2023-04-21 12:39:43] Iteration 2 out of 10 external iterations (fitting all parameters including W)...
-#> INFO [2023-04-21 12:39:43] Fitting means and variances...
-#> INFO [2023-04-21 12:39:44] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:44] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:44] Iteration 3 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:45] Internal loop converged.
-#> INFO [2023-04-21 12:39:45] Fitting W...
-#> INFO [2023-04-21 12:39:48] Iteration 3 out of 10 external iterations (fitting all parameters including W)...
-#> INFO [2023-04-21 12:39:48] Fitting means and variances...
-#> INFO [2023-04-21 12:39:48] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:49] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:49] Internal loop converged.
-#> INFO [2023-04-21 12:39:49] Fitting W...
-#> INFO [2023-04-21 12:39:53] Iteration 4 out of 10 external iterations (fitting all parameters including W)...
-#> INFO [2023-04-21 12:39:53] Fitting means and variances...
-#> INFO [2023-04-21 12:39:53] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:54] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:54] Internal loop converged.
-#> INFO [2023-04-21 12:39:54] Fitting W...
-#> INFO [2023-04-21 12:39:57] External loop converged.
-#> INFO [2023-04-21 12:39:57] Calculate p-values for deltas and gammas.
-#> INFO [2023-04-21 12:39:59] Fitting the TCA model given the updated W...
-#> INFO [2023-04-21 12:39:59] Fitting means and variances...
-#> INFO [2023-04-21 12:39:59] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-21 12:39:59] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-21 12:40:00] Iteration 3 out of 10 internal iterations...
-#> INFO [2023-04-21 12:40:00] Internal loop converged.
-#> INFO [2023-04-21 12:40:00] Calculate p-values for deltas and gammas.
-#> INFO [2023-04-21 12:40:02] Finished tca.
+se <- deconv(se, source = "cross", method = "cibersort")
+#> INFO [2023-04-24 15:45:08] Starting tca...
+#> INFO [2023-04-24 15:45:08] Validating input...
+#> INFO [2023-04-24 15:45:08] Starting re-estimation of W...
+#> INFO [2023-04-24 15:45:08] Performing feature selection using refactor...
+#> INFO [2023-04-24 15:45:08] Starting refactor...
+#> INFO [2023-04-24 15:45:08] Running PCA on X using rand_svd == TRUE...
+#> INFO [2023-04-24 15:45:08] Computing a low rank approximation of X...
+#> INFO [2023-04-24 15:45:08] Calculating the distance of each feature from its low rank approximation...
+#> INFO [2023-04-24 15:45:08] Computing the ReFACTor components based on the top 1345 features with lowest distances...
+#> INFO [2023-04-24 15:45:08] Finished refactor.
+#> INFO [2023-04-24 15:45:08] Fitting the TCA model using the selected features for re-estimating W...
+#> INFO [2023-04-24 15:45:08] Iteration 1 out of 10 external iterations (fitting all parameters including W)...
+#> INFO [2023-04-24 15:45:08] Fitting means and variances...
+#> INFO [2023-04-24 15:45:08] Iteration 1 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:09] Iteration 2 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:09] Internal loop converged.
+#> INFO [2023-04-24 15:45:09] Fitting W...
+#> INFO [2023-04-24 15:45:13] Iteration 2 out of 10 external iterations (fitting all parameters including W)...
+#> INFO [2023-04-24 15:45:13] Fitting means and variances...
+#> INFO [2023-04-24 15:45:13] Iteration 1 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:14] Iteration 2 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:15] Iteration 3 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:15] Internal loop converged.
+#> INFO [2023-04-24 15:45:15] Fitting W...
+#> INFO [2023-04-24 15:45:19] Iteration 3 out of 10 external iterations (fitting all parameters including W)...
+#> INFO [2023-04-24 15:45:19] Fitting means and variances...
+#> INFO [2023-04-24 15:45:19] Iteration 1 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:19] Iteration 2 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:20] Internal loop converged.
+#> INFO [2023-04-24 15:45:20] Fitting W...
+#> INFO [2023-04-24 15:45:23] Iteration 4 out of 10 external iterations (fitting all parameters including W)...
+#> INFO [2023-04-24 15:45:23] Fitting means and variances...
+#> INFO [2023-04-24 15:45:23] Iteration 1 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:24] Iteration 2 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:24] Internal loop converged.
+#> INFO [2023-04-24 15:45:24] Fitting W...
+#> INFO [2023-04-24 15:45:28] External loop converged.
+#> INFO [2023-04-24 15:45:28] Calculate p-values for deltas and gammas.
+#> INFO [2023-04-24 15:45:30] Fitting the TCA model given the updated W...
+#> INFO [2023-04-24 15:45:30] Fitting means and variances...
+#> INFO [2023-04-24 15:45:30] Iteration 1 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:30] Iteration 2 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:31] Iteration 3 out of 10 internal iterations...
+#> INFO [2023-04-24 15:45:31] Internal loop converged.
+#> INFO [2023-04-24 15:45:31] Calculate p-values for deltas and gammas.
+#> INFO [2023-04-24 15:45:33] Finished tca.
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](README_files/figure-gfm/plot2-1.png)<!-- -->
 
 ## Integrative analysis
 
@@ -168,9 +195,11 @@ disease status of these samples are well separated by the first common
 normalized scores.
 
 ``` r
-se <- ajive_decomp(se, use_marker = T)
-cns_plot(se, score = "cns_1", group_var = "disease", 
-         scatter = T, scatter_x = "cns_1", scatter_y = "cns_2")
+se <- ajive_decomp(se, use_marker = TRUE)
+cns_plot(se,
+    score = "cns_1", group_var = "disease",
+    scatter = TRUE, scatter_x = "cns_1", scatter_y = "cns_2"
+)
 #> Picking joint bandwidth of 0.00881
 ```
 
@@ -179,12 +208,14 @@ cns_plot(se, score = "cns_1", group_var = "disease",
 ### Comparison to PCA
 
 ``` r
-pca_res <- prcomp(t(assay(se)), rank. = 3, scale. = F)
+pca_res <- prcomp(t(assay(se)), rank. = 3, scale. = FALSE)
 pca_res_protein <- data.frame(pca_res[["x"]])
-pca_res_protein <- cbind(pca_res_protein, se@metadata$meta$disease)
-colnames(pca_res_protein)[4] = 'disease'
-GGally::ggpairs(pca_res_protein, columns = 1:3, aes(color = disease, alpha = 0.5),
-        upper = list(continuous = "points")) + theme_classic()
+pca_res_protein <- cbind(pca_res_protein, slot(se, "metadata")$meta$disease)
+colnames(pca_res_protein)[4] <- "disease"
+GGally::ggpairs(pca_res_protein,
+    columns = seq_len(3), aes(color = disease, alpha = 0.5),
+    upper = list(continuous = "points")
+) + theme_classic()
 ```
 
 ![](README_files/figure-gfm/pca-1.png)<!-- -->
@@ -192,12 +223,14 @@ GGally::ggpairs(pca_res_protein, columns = 1:3, aes(color = disease, alpha = 0.5
 ``` r
 
 
-pca_res <- prcomp(t(se@metadata$gene_data), rank. = 3, scale. = F)
+pca_res <- prcomp(t(slot(se, "metadata")$gene_data), rank. = 3, scale. = FALSE)
 pca_res_gene <- data.frame(pca_res[["x"]])
-pca_res_gene <- cbind(pca_res_gene, se@metadata$meta$disease)
-colnames(pca_res_gene)[4] = 'disease'
-GGally::ggpairs(pca_res_gene, columns = 1:3, aes(color = disease, alpha = 0.5),
-        upper = list(continuous = "points")) + theme_classic()
+pca_res_gene <- cbind(pca_res_gene, slot(se, "metadata")$meta$disease)
+colnames(pca_res_gene)[4] <- "disease"
+GGally::ggpairs(pca_res_gene,
+    columns = seq_len(3), aes(color = disease, alpha = 0.5),
+    upper = list(continuous = "points")
+) + theme_classic()
 ```
 
 ![](README_files/figure-gfm/pca-2.png)<!-- -->
@@ -249,9 +282,7 @@ The example SNP data provided here were restricted to chromosome 9 only.
 In practice, the SNPs may from multiple or even all chromosomes.
 
 ``` r
-se@metadata$SNP_data <- MICSQTL::SNP_data
-se@metadata$anno_SNP <- MICSQTL::anno_SNP
-head(se@metadata$anno_SNP)
+head(slot(se, "metadata")$anno_SNP)
 #>        CHROM       POS          ID
 #> 332373     9 137179658 9:137179658
 #> 237392     9 104596634 9:104596634
@@ -285,22 +316,24 @@ To simplify the analysis, we only test 3 targeted proteins from
 chromosome 9 as an example.
 
 ``` r
-target_protein <- rowData(se)[rowData(se)$Chr == 9,][1:3, "Symbol"]
-se <- feature_filter(se, target_protein = target_protein, 
-                     filter_method = c("allele", "distance"), 
-                     filter_allele = 0.15,
-                     filter_geno = 0.05,
-                     ref_position = "TSS")           
-#> Filter SNP based on distance for protein ABCA2
-#> Filter SNP based on distance for protein ABCA1
-#> Filter SNP based on distance for protein AGTPBP1
+target_protein <- rowData(se)[rowData(se)$Chr == 9, ][seq_len(3), "Symbol"]
+se <- feature_filter(se,
+    target_protein = target_protein,
+    filter_method = c("allele", "distance"),
+    filter_allele = 0.15,
+    filter_geno = 0.05,
+    ref_position = "TSS"
+)
+#> Filter SNP based on distance for proteinABCA2
+#> Filter SNP based on distance for proteinABCA1
+#> Filter SNP based on distance for proteinAGTPBP1
 ```
 
 In this example, the number of SNPs corresponding to each protein after
 filtering ranges from 7 to 26.
 
 ``` r
-unlist(lapply(se@metadata$choose_SNP_list, length))
+unlist(lapply(slot(se, "metadata")$choose_SNP_list, length))
 #>   ABCA1   ABCA2 AGTPBP1 
 #>      26      22       7
 ```
@@ -318,16 +351,18 @@ that the protein or gene expression is different among the sample from
 different genotype groups.
 
 ``` r
-se <- csQTL(se)
-#> csQTL test for protein ABCA1 
-#> csQTL test for protein ABCA2 
+system.time(se <- csQTL(se))
+#> csQTL test for protein ABCA1
+#> csQTL test for protein ABCA2
 #> csQTL test for protein AGTPBP1
+#>    user  system elapsed 
+#>    1.66    0.73  162.41
 ```
 
 We can check the results from csQTL analysis for one of target proteins:
 
 ``` r
-res <- se@metadata$TOAST_output[[2]]
+res <- slot(se, "metadata")$TOAST_output[[2]]
 head(res[order(apply(res, 1, min)), ])
 #>    protein         SNP      Astro   ExNeuron   InNeuron        Micro      Oligo
 #> 1    ABCA2 9:137179658 0.70063637 0.02088146 0.01155512 1.170298e-06 0.01516530
@@ -350,12 +385,12 @@ example to check the deconvoluted cellular expression for the first cell
 type (restricted to first 5 proteins and first 5 samples):
 
 ``` r
-se <- TCA_deconv(se, prop = se@metadata$prop)
-#> INFO [2023-04-21 12:45:26] Validating input...
-#> INFO [2023-04-21 12:45:26] Starting tensor for estimating Z...
-#> INFO [2023-04-21 12:45:26] Estimate tensor...
-#> INFO [2023-04-21 12:45:30] Finished estimating tensor.
-se@metadata$TCA_deconv[["Astro"]][1:5,1:5]
+se <- TCA_deconv(se, prop = slot(se, "metadata")$prop)
+#> INFO [2023-04-24 15:50:50] Validating input...
+#> INFO [2023-04-24 15:50:50] Starting tensor for estimating Z...
+#> INFO [2023-04-24 15:50:50] Estimate tensor...
+#> INFO [2023-04-24 15:50:54] Finished estimating tensor.
+slot(se, "metadata")$TCA_deconv[["Astro"]][seq_len(5), seq_len(5)]
 #>       2014_2194 2014_2195 2014_2200 2014_2622 2014_2625
 #> AAGAB  16.27985  16.27980  16.27968  16.27970  16.27972
 #> AARS2  18.33094  18.17958  18.25149  18.27929  18.22594
@@ -368,31 +403,31 @@ The figure below depict the cell-type-specific expression in one example
 protein.
 
 ``` r
-res <- se@metadata$TCA_deconv
+res <- slot(se, "metadata")$TCA_deconv
 idx <- which(rownames(assay(se)) == "ABCA2")
-df_res <- do.call("cbind", lapply(1:length(res), function(i){
-    df <- data.frame(t(res[[i]][idx, , drop = F]))
+df_res <- do.call("cbind", lapply(seq_len(length(res)), function(i) {
+    df <- data.frame(t(res[[i]][idx, , drop = FALSE]))
     colnames(df) <- names(res)[i]
     return(df)
 }))
-idx <- which(se@metadata$anno_SNP$ID == "9:137179658")
-table(se@metadata$SNP_data[idx,])
+idx <- which(slot(se, "metadata")$anno_SNP$ID == "9:137179658")
+table(slot(se, "metadata")$SNP_data[idx, ])
 #> 
 #>  0  1  2 
 #> 51 67  9
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/plot3-1.png)<!-- -->
 
 Such patterns may not be profound at bulk level.
 
 ``` r
 df <- assay(se)
-df <- df[which(rownames(df) == "ABCA2"),]
-df_test <- data.frame(value = as.vector(t(df)), genotype = se@metadata$SNP_data[idx,])
+df <- df[which(rownames(df) == "ABCA2"), ]
+df_test <- data.frame(value = as.vector(t(df)), genotype = slot(se, "metadata")$SNP_data[idx, ])
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/plot4-1.png)<!-- -->
 
 # Licenses of the analysis methods
 

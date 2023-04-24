@@ -14,7 +14,6 @@ Suggests:
     rmarkdown,
     knitr
 VignetteBuilder: knitr
-Config/testthat/edition: 3
 biocViews: GeneExpression, Genetics, Proteomics, RNASeq, Sequencing, SingleCell, Software, Visualization, CellBasedAssays
 Imports: 
     TCA,

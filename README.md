@@ -1,7 +1,7 @@
 MICSQTL: Multi-omic deconvolution, Integration and Cell-type-specific
 Quantitative Trait Loci
 ================
-truetrue
+
 
 # Introduction
 
@@ -23,8 +23,8 @@ tool.
 
 ``` r
 # Install
-# options(download.file.method = "wininet")
-# devtools::install_github("YuePan027/MICSQTL")
+options(download.file.method = "wininet") # comment if not windows system
+devtools::install_github("YuePan027/MICSQTL")
 library(MICSQTL)
 library(reshape2)
 library(RColorBrewer)

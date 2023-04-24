@@ -57,9 +57,6 @@ reliable results.
 In this package, we provide an example `SummarizedExperiment` object containing 
 the following elements:
 
-In this package, we provide an example `SummarizedExperiment` object containing 
-the following elements:
-
 - protein_data: A subset of proteomic data PsychENCODE with 2242 rows 
  (protein) and 127 columns (sample).
 

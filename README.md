@@ -103,7 +103,7 @@ head(slot(se, "metadata")$prop)
 #> 2015_1    0.2070628 0.10253712 0.5513774 0.1390227
 ```
 
-![](README_files/figure-gfm/plot1-1.png)<!-- -->
+![](./vignettes/plot1-1.png)<!-- -->
 
 Alternatively, if there are cell-type proportion estimates results
 generated using other methods or obtained from other sources, just save
@@ -170,7 +170,7 @@ se <- deconv(se, source = "cross", method = "cibersort")
 #> INFO [2023-04-24 16:02:12] Finished tca.
 ```
 
-![](README_files/figure-gfm/plot2-1.png)<!-- -->
+![](./vignettes/plot2-1.png)<!-- -->
 
 ## Integrative analysis
 
@@ -200,7 +200,7 @@ cns_plot(se,
 #> Picking joint bandwidth of 0.00881
 ```
 
-![](README_files/figure-gfm/ajive-1.png)<!-- -->
+![](./vignettes/ajive-1.png)<!-- -->
 
 ### Comparison to PCA
 
@@ -215,7 +215,7 @@ GGally::ggpairs(pca_res_protein,
 ) + theme_classic()
 ```
 
-![](README_files/figure-gfm/pca-1.png)<!-- -->
+![](./vignettes/pca-1.png)<!-- -->
 
 ``` r
 
@@ -230,7 +230,7 @@ GGally::ggpairs(pca_res_gene,
 ) + theme_classic()
 ```
 
-![](README_files/figure-gfm/pca-2.png)<!-- -->
+![](./vignettes/pca-2.png)<!-- -->
 
 ## Feature filtering
 
@@ -414,7 +414,7 @@ table(slot(se, "metadata")$SNP_data[idx, ])
 #> 51 67  9
 ```
 
-![](README_files/figure-gfm/plot3-1.png)<!-- -->
+![](./vignettes/plot3-1.png)<!-- -->
 
 Such patterns may not be profound at bulk level.
 
@@ -424,7 +424,7 @@ df <- df[which(rownames(df) == "ABCA2"), ]
 df_test <- data.frame(value = as.vector(t(df)), genotype = slot(se, "metadata")$SNP_data[idx, ])
 ```
 
-![](README_files/figure-gfm/plot4-1.png)<!-- -->
+![](./vignettes/plot4-1.png)<!-- -->
 
 # Licenses of the analysis methods
 

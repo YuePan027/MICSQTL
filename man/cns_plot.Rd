@@ -14,30 +14,43 @@ cns_plot(
 )
 }
 \arguments{
-\item{se}{A `SummarizedExperiment` object with common normalized scores stored as an element (`cns`) in `metadata` slot.
-In addition, a metadata with phenotype interested and measures on the matched samples (as in assay) is required.}
+\item{se}{A `SummarizedExperiment` object with common normalized scores s
+tored as an element (`cns`) in `metadata` slot.
+In addition, a metadata with phenotype interested and measures on the
+matched samples (as in assay) is required.}
 
-\item{score}{A character of variable name indicating which common normalized score is used for boxplot and ridge plot.}
+\item{score}{A character of variable name indicating which common
+normalized score is used for boxplot and ridge plot.}
 
-\item{group_var}{A character of variable name indicating which variable is used as the group variable to
+\item{group_var}{A character of variable name indicating which variable is
+used as the group variable to
 compare common normalized scores.}
 
-\item{scatter}{A logical value indicating whether to make scatter plot or not. Only valid when the joint rank is at least two.}
+\item{scatter}{A logical value indicating whether to make scatter plot or
+not. Only valid when the joint rank is at least two.}
 
-\item{scatter_x}{A character of variable name indicating which common normalized scores on horizontal axis.}
+\item{scatter_x}{A character of variable name indicating which common
+normalized scores on horizontal axis.}
 
-\item{scatter_y}{A character of variable name indicating which common normalized scores on vertical axis.}
+\item{scatter_y}{A character of variable name indicating which common
+normalized scores on vertical axis.}
 }
 \value{
-A `SummarizedExperiment`. The results from AJIVE will be stored as an element (`ajive_res`) in `metadata` slot.
-The generated common normalized scores will be stored as an element (`cns`) in `metadata` slot.
+A `SummarizedExperiment`. The results from AJIVE will be stored
+as an element (`ajive_res`) in `metadata` slot.
+The generated common normalized scores will be stored as an element (`cns`)
+in `metadata` slot.
 }
 \description{
-This function is used to visualize the distribution of common normalized scores across different data sources.
+This function is used to visualize the distribution of common normalized
+scores across different data sources.
 }
 \examples{
 data(se)
 se <- ajive_decomp(se, use_marker = TRUE)
-cns_plot(se, score = "cns_1", group_var = "disease", scatter = TRUE, scatter_x = "cns_1", scatter_y = "cns_2")
+cns_plot(se,
+    score = "cns_1", group_var = "disease", scatter = TRUE,
+    scatter_x = "cns_1", scatter_y = "cns_2"
+)
 
 }

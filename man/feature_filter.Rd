@@ -2,7 +2,8 @@
 % Please edit documentation in R/feature_filter.R
 \name{feature_filter}
 \alias{feature_filter}
-\title{Estimation of cellular composition in high-throughput data from heterogeneous tissues}
+\title{Estimation of cellular composition in high-throughput data
+from heterogeneous tissues}
 \usage{
 feature_filter(
   se,
@@ -16,55 +17,81 @@ feature_filter(
 )
 }
 \arguments{
-\item{se}{A `SummarizedExperiment` object with bulk protein expression data frame contained in `counts` slot.
-Annotations on each row (protein) should be stored in rowData() with protein symbol as row names
-The first column should be a character vector indicating which chromosome each protein is on.
-A "Start" column with numeric values indicating the start position on that chromosome and
+\item{se}{A `SummarizedExperiment` object with bulk protein expression data
+frame contained in `counts` slot.
+Annotations on each row (protein) should be stored in rowData() with protein
+symbol as row names
+The first column should be a character vector indicating which chromosome
+each protein is on.
+A "Start" column with numeric values indicating the start position on that
+chromosome and
 a "Symbol" column as a unique name for each protein is also required.
-The information from genetic variants should be stored in a P (the number of SNP) by N
-(the number of samples, should match the sample in `counts` slot) matrix contained as an element
+The information from genetic variants should be stored in a P
+(the number of SNP) by N
+(the number of samples, should match the sample in `counts` slot) matrix
+contained as an element
 (`SNP_data`) in `metadata` slot.
-Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
-The annotations of these SNP should be stored as an element (`anno_SNP`) in `metadata` slot.
-It should include at least the following columns: "CHROM" (which chromosome the SNP is on),
-"POS" (position of that SNP) and "ID" (a unique identifier for each SNP, usually a combination of
+Each matrix entry corresponds to the genotype group indicator (0, 1 or 2)
+for a sample at a genetic location.
+The annotations of these SNP should be stored as an element (`anno_SNP`)
+in `metadata` slot.
+It should include at least the following columns: "CHROM"
+(which chromosome the SNP is on),
+"POS" (position of that SNP) and "ID" (a unique identifier for each SNP,
+usually a combination of
 chromosome and its position).}
 
-\item{target_protein}{A character vector contains proteins names that will be used for downstream analysis.
+\item{target_protein}{A character vector contains proteins names that will
+be used for downstream analysis.
 By default, all proteins in `counts` slot will be used.}
 
-\item{target_SNP}{A character vector contains SNP IDs that will be used for downstream analysis.
+\item{target_SNP}{A character vector contains SNP IDs that will be used
+for downstream analysis.
 If not provided, all SNPs will be used for further filtering.}
 
-\item{filter_method}{A character string denotes which filtering method will be used to filter out unrelated SNPs.
-If "allele", then the minor allele frequency below argument `filter_allele` will be filtered out.
-If "distance", then only cis-acting SNPs for each protein (defined as SNPs on the same chromosome and
-within 1M base pair (bp) range of that protein) will be included for downstream analysis.
+\item{filter_method}{A character string denotes which filtering method
+will be used to filter out unrelated SNPs.
+If "allele", then the minor allele frequency below argument `filter_allele`
+will be filtered out.
+If "distance", then only cis-acting SNPs for each protein
+(defined as SNPs on the same chromosome and
+within 1M base pair (bp) range of that protein) will be included for
+downstream analysis.
 if "null", then the same SNPs will be used for each protein.}
 
-\item{filter_allele}{A numeric value denotes the threshold for minor allele frequency. Only works when `filter_method`
+\item{filter_allele}{A numeric value denotes the threshold for minor
+allele frequency. Only works when `filter_method`
 contains "allele".}
 
-\item{filter_geno}{A numeric value denotes the threshold for minimum genotype group proportion.
+\item{filter_geno}{A numeric value denotes the threshold for minimum
+genotype group proportion.
 Only works when `filter_method` contains "allele".}
 
-\item{ref_position}{A character string denotes the reference position on protein when `filter_method` contains "distance",
-where 'TSS" refers to transcription start site, and "genebody" refers to the middle point of "Start" and "End" position.}
+\item{ref_position}{A character string denotes the reference position
+on protein when `filter_method` contains "distance",
+where 'TSS" refers to transcription start site, and "genebody" refers
+to the middle point of "Start" and "End" position.}
 
 \item{BPPARAM}{For applying `bplapply`.}
 }
 \value{
-A `SummarizedExperiment`. The results after filtering will be stored as an element
+A `SummarizedExperiment`. The results after filtering will be
+stored as an element
 (`choose_SNP_list`) in `metadata` slot.
-`choose_SNP_list` is a list with the length of the number of proteins for downstream analysis.
-Each element stores the index of SNPs to be tested for corresponding protein.
-The proteins with no SNPs correspond to it will be removed from the returned list.
+`choose_SNP_list` is a list with the length of the number of proteins
+for downstream analysis.
+Each element stores the index of SNPs to be tested for corresponding
+protein.
+The proteins with no SNPs correspond to it will be removed from the
+returned list.
 }
 \description{
-This function returns a `SummarizedExperiment` object including SNPs used to test for each protein in downstream analysis.
+This function returns a `SummarizedExperiment` object including SNPs used to
+test for each protein in downstream analysis.
 }
 \details{
-This is a function developed to implement cell-type proportion deconvolution using either `CIBERSORT` or `nnls`.
+This is a function developed to implement cell-type proportion deconvolution
+using either `CIBERSORT` or `nnls`.
 }
 \examples{
 data(se)

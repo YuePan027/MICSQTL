@@ -354,10 +354,21 @@ ggplot(
 # Licenses of the analysis methods
 | method | citation |
 |--------|----------|
-| [CIBERSORT](https://cibersort.stanford.edu/) | Newman, A. M., Liu, C. L., Green, M. R., Gentles, A. J., Feng, W., Xu, Y., … Alizadeh, A. A. (2015). Robust enumeration of cell subsets from tissue expression profiles. Nature Methods, 12(5), 453–457. |
-| [TCA](https://cran.r-project.org/web/packages/TCA/index.html) | Rahmani, Elior, et al. "Cell-type-specific resolution epigenetics without the need for cell sorting or single-cell biology." Nature communications 10.1 (2019): 3417. |
-| [AJIVE](https://github.com/idc9/r_jive) | Feng, Qing, et al. "Angle-based joint and individual variation explained." Journal of multivariate analysis 166 (2018): 241-265. |
-| [TOAST](http://bioconductor.org/packages/release/bioc/html/TOAST.html) | Li, Ziyi, and Hao Wu. "TOAST: improving reference-free cell composition estimation by cross-cell type differential analysis." Genome biology 20.1 (2019): 1-17. |
+| [CIBERSORT](https://cibersort.stanford.edu/) | 
+Newman, A. M., Liu, C. L., Green, M. R., Gentles, A. J., Feng, W., Xu, Y., … 
+Alizadeh, A. A. (2015). Robust enumeration of cell subsets from 
+tissue expression profiles. Nature Methods, 12(5), 453–457. |
+| [TCA](https://cran.r-project.org/web/packages/TCA/index.html) | 
+Rahmani, Elior, et al. "Cell-type-specific resolution epigenetics 
+without the need for cell sorting or single-cell biology." 
+Nature communications 10.1 (2019): 3417. |
+| [AJIVE](https://github.com/idc9/r_jive) | Feng, Qing, et al. 
+"Angle-based joint and individual variation explained." 
+Journal of multivariate analysis 166 (2018): 241-265. |
+| [TOAST](http://bioconductor.org/packages/release/bioc/html/TOAST.html) |
+Li, Ziyi, and Hao Wu. "TOAST: improving reference-free 
+cell composition estimation by cross-cell type differential analysis." 
+Genome biology 20.1 (2019): 1-17. |
 
 
 

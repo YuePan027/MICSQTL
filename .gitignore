@@ -1,8 +1,31 @@
 .Rproj.user
+.Rproj.user/
 .Rhistory
+.Rapp.history
 .RData
 .Ruserdata
 /doc/
 /Meta/
 .Rproj
 MICSQTL.Rproj
+/*.tar.gz
+/*.Rcheck/
+vignettes/*.html
+*_cache/
+/cache/
+*.utf8.md
+*.knit.md
+.Renviron
+
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+
+
+hidden_file_ext = (
+    ".renviron", ".rprofile", ".rproj", ".rproj.user", ".rhistory",
+    ".rapp.history", ".o", ".sl", ".so", ".dylib", ".a", ".dll",
+    ".def", ".ds_store", "unsrturl.bst", ".log", ".aux", ".backups",
+    ".cproject", ".directory", ".dropbox", ".exrc", ".gdb.history",
+    ".gitattributes", ".gitmodules", ".hgtags", ".project", ".seed",
+    ".settings", ".tm_properties"
+)

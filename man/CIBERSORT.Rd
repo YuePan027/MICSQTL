@@ -2,7 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{CIBERSORT}
 \alias{CIBERSORT}
-\title{CIBERSORT is an analytical tool developed by Newman et al. to provide an estimation of the abundances of member cell types in a mixed cell population, using gene expression data.}
+\title{CIBERSORT is an analytical tool developed by Newman et al. to provide an
+estimation of the abundances of member cell types in a mixed cell population,
+ using gene expression data.}
 \usage{
 CIBERSORT(
   sig_matrix,
@@ -14,21 +16,29 @@ CIBERSORT(
 )
 }
 \arguments{
-\item{sig_matrix}{Cell type GEP barcode matrix: row 1 = sample labels; column 1 = gene symbols; no missing values; default =LM22.txt download from CIBERSORT (https://cibersort.stanford.edu/runcibersort.php)}
+\item{sig_matrix}{Cell type GEP barcode matrix: row 1 = sample labels;
+column 1 = gene symbols; no missing values; default =LM22.txt download
+from CIBERSORT (https://cibersort.stanford.edu/runcibersort.php)}
 
-\item{mixture_file}{GEP matrix: row 1 = sample labels; column 1 = gene symbols; no missing values}
+\item{mixture_file}{GEP matrix: row 1 = sample labels; column
+1 = gene symbols; no missing values}
 
-\item{perm}{Set permutations for statistical analysis (≥100 permutations recommended).}
+\item{perm}{Set permutations for statistical analysis
+(≥100 permutations recommended).}
 
 \item{QN}{Quantile normalization of input mixture (default = TRUE)}
 
 \item{absolute}{Run CIBERSORT in absolute mode (default = FALSE)
-- note that cell subsets will be scaled by their absolute levels and will not be represented as fractions
-(to derive the default output, normalize absolute levels such that they sum to 1 for each mixture sample)
-- the sum of all cell subsets in each mixture sample will be added to the ouput ('Absolute score').
+- note that cell subsets will be scaled by their absolute levels and will
+not be represented as fractions
+(to derive the default output, normalize absolute levels such that they
+sum to 1 for each mixture sample)
+- the sum of all cell subsets in each mixture sample will be added to the
+ouput ('Absolute score').
 If LM22 is used, this score will capture total immune content.}
 
-\item{abs_method}{if absolute is set to TRUE, choose method: 'no.sumto1' or 'sig.score'
+\item{abs_method}{if absolute is set to TRUE, choose method: 'no.sumto1'
+or 'sig.score'
 - sig.score = for each mixture sample, define S as the median expression
 level of all genes in the signature matrix divided by the median expression
 level of all genes in the mixture. Multiple cell subset fractions by S.
@@ -38,7 +48,9 @@ level of all genes in the mixture. Multiple cell subset fractions by S.
 cibersrot with immune cell fractions
 }
 \description{
-CIBERSORT is an analytical tool developed by Newman et al. to provide an estimation of the abundances of member cell types in a mixed cell population, using gene expression data.
+CIBERSORT is an analytical tool developed by Newman et al. to provide an
+estimation of the abundances of member cell types in a mixed cell population,
+ using gene expression data.
 }
 \author{
 Aaron M. Newman, Stanford University (amnewman@stanford.edu)

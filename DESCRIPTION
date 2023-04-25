@@ -29,10 +29,12 @@ Imports:
     ggplot2,
     ggpubr,
     ggridges,
-    parallel
+    parallel,
+    glue,
+    methods
 Depends: 
     R (>= 4.2.0),
     SummarizedExperiment,
     stats
 RoxygenNote: 7.2.1
-LazyData: TRUE
+LazyData: false

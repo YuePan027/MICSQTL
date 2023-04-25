@@ -2,45 +2,45 @@
 % Please edit documentation in R/deconv.R
 \name{deconv}
 \alias{deconv}
-\title{Estimation of cellular composition in high-throughput data from 
+\title{Estimation of cellular composition in high-throughput data from
 heterogeneous tissues}
 \usage{
 deconv(se, source = "protein", method = "cibersort")
 }
 \arguments{
-\item{se}{A `SummarizedExperiment` object with bulk protein expression 
+\item{se}{A `SummarizedExperiment` object with bulk protein expression
 data frame contained in `counts` slot,
-a bulk transcript expression data frame (`gene_data`) contained in 
+a bulk transcript expression data frame (`gene_data`) contained in
 `metadata` slot, and
 a "signature matrix" which serves as a reference of known cellular signatures
  contained as an element start with
 `sig` (`sig_protein` or `sig_gene` depends on `source`) in `metadata` slot.
-Note that the 'signature matrix' should only include markers that have been 
+Note that the 'signature matrix' should only include markers that have been
 demonstrated to be useful in previous
 literature to ensure reliable results.}
 
-\item{source}{A character string denotes which molecular profiles to be 
+\item{source}{A character string denotes which molecular profiles to be
 deconvoluted. The setting of `proteins`
 or `transcript` means single-source
-deconvolution with source-specific signature matrix, while 'cross' means 
+deconvolution with source-specific signature matrix, while 'cross' means
 proteome deconvolution based on
 pre-estimated transcriptome proportion.}
 
-\item{method}{A character string denotes which deconvolution method to use. 
+\item{method}{A character string denotes which deconvolution method to use.
 In the current version, only
 `CIBERSORT` or `nnls` is supported.}
 }
 \value{
-A `SummarizedExperiment`. The cell-type proportion estimates for 
+A `SummarizedExperiment`. The cell-type proportion estimates for
 each sample will be stored as an
 element start with `prop` (depends on `source`) in `metadata` slot.
 }
 \description{
-This function returns a `SummarizedExperiment` object including cell-type 
+This function returns a `SummarizedExperiment` object including cell-type
 proportion estimates for each sample.
 }
 \details{
-This is a function developed to implement cell-type proportion deconvolution 
+This is a function developed to implement cell-type proportion deconvolution
 using either `CIBERSORT` or `nnls`.
 }
 \examples{

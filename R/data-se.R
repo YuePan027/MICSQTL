@@ -34,4 +34,8 @@
 #' @name se
 #' @docType data
 #' @keywords datasets
+#' @examples 
+#' data(se)
+#' ls()
+#' 
 "se"

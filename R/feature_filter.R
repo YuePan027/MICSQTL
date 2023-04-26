@@ -98,12 +98,6 @@ feature_filter <- function(se,
         stop("Samples in protein_data do not match that in SNP_data")
     }
 
-    if (!nrow(methods::slot(se, "metadata")$SNP_data) ==
-        nrow(methods::slot(se, "metadata")$anno_SNP)) {
-        stop("SNPs contained in annotation data frame `anno_SNP` must match
-             the SNPs in `SNP_data`")
-    }
-
     if (!is.null(target_protein)) {
         methods::slot(se, "metadata")$target_dat <- assay(se)[target_protein, ]
         # se <- se[target_protein, ]

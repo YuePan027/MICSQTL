@@ -43,4 +43,9 @@ which stores Annotations of each SNP from `SNP_data`.
   - meta: A data frame with 127 rows (sample) and 2 columns
 (disease status and gender) as metadata.
 }
+\examples{
+data(se)
+ls()
+
+}
 \keyword{datasets}

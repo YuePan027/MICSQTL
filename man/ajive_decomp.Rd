@@ -28,7 +28,7 @@ on the choice of initial ranks.}
 \item{test}{A character string indicate which data are used as a secondary
 data block measured on the same set of samples.}
 
-\item{use_marker}{If TRUE, only markers contained in `sig_gene` are used.}
+\item{use_marker}{If TRUE, only markers contained in `ref_gene` are used.}
 
 \item{level}{A character string indicate if the integrative analysis should
 be done at cell type specific level and

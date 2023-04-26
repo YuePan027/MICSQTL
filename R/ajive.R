@@ -27,7 +27,7 @@
 #' on the choice of initial ranks.
 #' @param test A character string indicate which data are used as a secondary
 #' data block measured on the same set of samples.
-#' @param use_marker If TRUE, only markers contained in `sig_gene` are used.
+#' @param use_marker If TRUE, only markers contained in `ref_gene` are used.
 #' @param level A character string indicate if the integrative analysis should
 #' be done at cell type specific level and
 #' which cell type should be used. By default, the integrative analysis is done
@@ -55,7 +55,7 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
         if (use_marker) {
             in_use <- intersect(
                 rownames(methods::slot(se, "metadata")$gene_data),
-                rownames(methods::slot(se, "metadata")$sig_gene)
+                rownames(methods::slot(se, "metadata")$ref_gene)
             )
             dat2 <- methods::slot(se, "metadata")[[test]][in_use, ]
         } else {

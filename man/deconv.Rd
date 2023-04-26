@@ -14,7 +14,7 @@ a bulk transcript expression data frame (`gene_data`) contained in
 `metadata` slot, and
 a "signature matrix" which serves as a reference of known cellular signatures
  contained as an element start with
-`sig` (`sig_protein` or `sig_gene` depends on `source`) in `metadata` slot.
+`sig` (`ref_protein` or `ref_gene` depends on `source`) in `metadata` slot.
 Note that the 'signature matrix' should only include markers that have been
 demonstrated to be useful in previous
 literature to ensure reliable results.}

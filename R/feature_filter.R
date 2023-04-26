@@ -142,7 +142,7 @@ feature_filter <- function(se,
         choose_SNP_list <- bplapply(seq_len(length(target_protein)),
             function(i) {
                 message(
-                    "Filter SNP based on distance for protein",
+                    "Filter SNP based on distance for protein ",
                     target_protein[i], "\n"
                 )
                 df <- 

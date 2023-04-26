@@ -335,7 +335,8 @@ Such patterns may not be profound at bulk level.
 ```{r bulk}
 df <- assay(se)
 df <- df[which(rownames(df) == "ABCA2"), ]
-df_test <- data.frame(value = as.vector(t(df)), genotype = slot(se, "metadata")$SNP_data[idx, ])
+df_test <- data.frame(value = as.vector(t(df)), 
+                      genotype = slot(se, "metadata")$SNP_data[idx, ])
 ```
 
 ```{r plot4, echo = FALSE}

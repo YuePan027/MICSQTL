@@ -12,7 +12,8 @@ Encoding: UTF-8
 Suggests: 
     testthat,
     rmarkdown,
-    knitr
+    knitr,
+    BiocStyle
 VignetteBuilder: knitr
 biocViews: GeneExpression, Genetics, Proteomics, RNASeq, Sequencing, SingleCell, Software, Visualization, CellBasedAssays
 Imports: 

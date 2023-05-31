@@ -37,5 +37,5 @@ Depends:
     R (>= 4.2.0),
     SummarizedExperiment,
     stats
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 LazyData: false

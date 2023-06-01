@@ -54,11 +54,11 @@ CoreAlg <- function(X, y, absolute, abs_method) {
         model
     }
 
-    #if (Sys.info()["sysname"] == "Windows") {
-        out <- mclapply(seq_len(svn_itor), res, mc.cores = 1)
-    #} else {
-        #out <- mclapply(seq_len(svn_itor), res, mc.cores = svn_itor)
-    #}
+    # if (Sys.info()["sysname"] == "Windows") {
+    out <- mclapply(seq_len(svn_itor), res, mc.cores = 1)
+    # } else {
+    # out <- mclapply(seq_len(svn_itor), res, mc.cores = svn_itor)
+    # }
 
     nusvm <- rep(0, svn_itor)
     corrv <- rep(0, svn_itor)
@@ -180,7 +180,7 @@ CIBERSORT <- function(sig_matrix, mixture_file, perm, QN = TRUE, absolute,
 
     # read in data
     X <- sig_matrix
-    
+
     Y <- tibble::rownames_to_column(mixture_file, var = "symbol")
     # to prevent crashing on duplicated gene symbols,
     # add unique numbers to identical names
@@ -378,7 +378,7 @@ get_joint_scores <- function(blocks, block_svd, initial_signal_ranks,
                              sv_thresholds,
                              n_wedin_samples = 1000, n_rand_dir_samples = 1000,
                              joint_rank = NA) {
-    if (is.na(n_wedin_samples) & is.na(n_rand_dir_samples) & 
+    if (is.na(n_wedin_samples) & is.na(n_rand_dir_samples) &
         is.na(joint_rank)) {
         stop("at least one of n_wedin_samples, n_rand_dir_samples,
              or joint_rank must not be NA",
@@ -503,7 +503,7 @@ get_joint_scores <- function(blocks, block_svd, initial_signal_ranks,
 ## Computes X = J + I + E for a single data block and the respective SVDs.
 ##
 
-get_final_decomposition <- function(X, joint_scores, 
+get_final_decomposition <- function(X, joint_scores,
                                     sv_threshold, full = TRUE) {
     jive_decomposition <- list()
     jive_decomposition[["individual"]] <-

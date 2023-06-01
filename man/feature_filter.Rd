@@ -69,7 +69,7 @@ Only works when `filter_method` contains "allele".}
 
 \item{ref_position}{A character string denotes the reference position
 on protein when `filter_method` contains "distance",
-where 'TSS" refers to transcription start site, and "genebody" refers
+where "TSS" refers to transcription start site, and "genebody" refers
 to the middle point of "Start" and "End" position.}
 
 \item{BPPARAM}{For applying `bplapply`.}

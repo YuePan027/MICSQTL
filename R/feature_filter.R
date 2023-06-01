@@ -53,7 +53,7 @@
 #' Only works when `filter_method` contains "allele".
 #' @param ref_position A character string denotes the reference position
 #' on protein when `filter_method` contains "distance",
-#' where 'TSS" refers to transcription start site, and "genebody" refers
+#' where "TSS" refers to transcription start site, and "genebody" refers
 #' to the middle point of "Start" and "End" position.
 #' @param BPPARAM For applying `bplapply`.
 #'
@@ -93,8 +93,8 @@ feature_filter <- function(se,
                            BPPARAM = bpparam()) {
     assay(se) <- as.data.frame(assay(se))
 
-    if (!all(colnames(assay(se)) == 
-             colnames(methods::slot(se, "metadata")$SNP_data))) {
+    if (!all(colnames(assay(se)) ==
+        colnames(methods::slot(se, "metadata")$SNP_data))) {
         stop("Samples in protein_data do not match that in SNP_data")
     }
 
@@ -119,10 +119,10 @@ feature_filter <- function(se,
             ]
     }
 
-    choose_SNP_list <- 
+    choose_SNP_list <-
         rep(list(seq_len(nrow(methods::slot(se, "metadata")$SNP_data))),
-        each = length(target_protein)
-    )
+            each = length(target_protein)
+        )
 
     if ("allele" %in% filter_method) {
         prop <- apply(methods::slot(se, "metadata")$SNP_data, 1, prop_allele)
@@ -145,16 +145,16 @@ feature_filter <- function(se,
                     "Filter SNP based on distance for protein ",
                     target_protein[i], "\n"
                 )
-                df <- 
-                    rowData(se)[which(rowData(se)$Symbol == 
-                                          target_protein[i]), ]
+                df <-
+                    rowData(se)[which(rowData(se)$Symbol ==
+                        target_protein[i]), ]
                 if (ref_position == "TSS") {
                     df$ref_pos <- df$Start
                 } else if (ref_position == "genebody") {
                     df$ref_pos <- (df$Start + df$end) / 2
                 }
-                idx2 <- which((abs(as.numeric(anno_SNP$POS) - df$ref_pos) < 
-                                   1000000) &
+                idx2 <- which((abs(as.numeric(anno_SNP$POS) - df$ref_pos) <
+                    1000000) &
                     anno_SNP$CHROM == df[1, 1])
                 return(idx2)
             },

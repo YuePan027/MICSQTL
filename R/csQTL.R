@@ -64,7 +64,7 @@ csQTL <- function(se, BPPARAM = bpparam()) {
         seq_len(length(methods::slot(se, "metadata")$choose_SNP_list)),
         function(x) {
             test_protein <- methods::slot(se, "metadata")$choose_SNP_list[[x]]
-            protein_name <- 
+            protein_name <-
                 names(methods::slot(se, "metadata")$choose_SNP_list)[x]
             message("csQTL test for protein ", protein_name, "\n")
 

@@ -55,7 +55,7 @@ deconv <- function(se,
                  expression data.")
         }
         protein_sub <- as.data.frame(assay(se)[in_use, , drop = FALSE])
-        ref_protein <- 
+        ref_protein <-
             methods::slot(se, "metadata")$ref_protein[in_use, , drop = FALSE]
         if (method == "cibersort") {
             result <- CIBERSORT(
@@ -86,11 +86,11 @@ deconv <- function(se,
             stop("None of the feaures in 'signature matrix' exist in bulk
                  expression data.")
         }
-        gene_sub <- 
+        gene_sub <-
             as.data.frame(methods::slot(se, "metadata")$gene_data[in_use, ,
-            drop = FALSE
-        ])
-        ref_gene <- 
+                drop = FALSE
+            ])
+        ref_gene <-
             methods::slot(se, "metadata")$ref_gene[in_use, , drop = FALSE]
         if (method == "cibersort") {
             result <- CIBERSORT(
@@ -120,11 +120,11 @@ deconv <- function(se,
             stop("None of the feaures in 'signature matrix' exist in bulk
                  expression data.")
         }
-        gene_sub <- 
+        gene_sub <-
             as.data.frame(methods::slot(se, "metadata")$gene_data[in_use, ,
-            drop = FALSE
-        ])
-        ref_gene <- 
+                drop = FALSE
+            ])
+        ref_gene <-
             methods::slot(se, "metadata")$ref_gene[in_use, , drop = FALSE]
         result <- CIBERSORT(
             sig_matrix = ref_gene,

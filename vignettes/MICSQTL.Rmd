@@ -373,5 +373,11 @@ Genome biology 20.1 (2019): 1-17. |
 
 
 
+# Session info {.unnumbered}
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
+
 
 

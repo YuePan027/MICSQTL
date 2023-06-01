@@ -54,11 +54,11 @@ CoreAlg <- function(X, y, absolute, abs_method) {
         model
     }
 
-    if (Sys.info()["sysname"] == "Windows") {
+    #if (Sys.info()["sysname"] == "Windows") {
         out <- mclapply(seq_len(svn_itor), res, mc.cores = 1)
-    } else {
-        out <- mclapply(seq_len(svn_itor), res, mc.cores = svn_itor)
-    }
+    #} else {
+        #out <- mclapply(seq_len(svn_itor), res, mc.cores = svn_itor)
+    #}
 
     nusvm <- rep(0, svn_itor)
     corrv <- rep(0, svn_itor)
@@ -141,7 +141,7 @@ doPerm <- function(perm, X, Y, absolute, abs_method) {
 #' @param mixture_file  GEP matrix: row 1 = sample labels; column
 #' 1 = gene symbols; no missing values
 #' @param perm Set permutations for statistical analysis
-#' (≥100 permutations recommended).
+#' (at least 100 permutations recommended).
 #' @param QN Quantile normalization of input mixture (default = TRUE)
 #' @param absolute  Run CIBERSORT in absolute mode (default = FALSE)
 #' - note that cell subsets will be scaled by their absolute levels and will

@@ -24,7 +24,7 @@ from CIBERSORT (https://cibersort.stanford.edu/runcibersort.php)}
 1 = gene symbols; no missing values}
 
 \item{perm}{Set permutations for statistical analysis
-(≥100 permutations recommended).}
+(at least 100 permutations recommended).}
 
 \item{QN}{Quantile normalization of input mixture (default = TRUE)}
 

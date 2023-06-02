@@ -38,11 +38,16 @@ Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to
 # Install
 # options(download.file.method = "wininet")
 # devtools::install_github("YuePan027/MICSQTL")
+package_names <- c("reshape2", "RColorBrewer", "GGally", "ggplot2")
+
+# Check and install packages
+for (pkg in package_names) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
+}
 library(MICSQTL)
-library(reshape2)
-library(RColorBrewer)
-library(GGally)
-library(ggplot2)
 ```
 
 # Quick start
@@ -93,7 +98,7 @@ This step estimates cell type proportions per molecule type.
 
 In this current version, only `CIBERSORT` and `nnls` are supported as single-source deconvolution methods.
 
-```{r deconv1}
+```{r deconv1, results=FALSE}
 se <- deconv(se, source = "protein", method = "cibersort")
 ```
 
@@ -108,7 +113,7 @@ head(slot(se, "metadata")$prop)
 ```{r plot1, echo  = FALSE, warning  = FALSE}
 mycolors1 <- brewer.pal(5, "Set2")[c(2, 1, 5, 3, 4)]
 ggplot(
-    cbind(data.frame(reshape2::melt(slot(se, "metadata")$prop), slot(se, "metadata")$meta)),
+    cbind(data.frame(melt(slot(se, "metadata")$prop), slot(se, "metadata")$meta)),
     aes(x = Var2, y = value, fill = Var2)
 ) +
     geom_point(
@@ -139,13 +144,13 @@ deconvolution based on matched bulk transcriptome-proteome. In
 the example below, we show how to estimate protein proportions by borrowing 
 information from deconvoluted transcriptomes. 
 
-```{r cross, message  = FALSE, warning  = FALSE}
+```{r cross, message  = FALSE, warning  = FALSE, results=FALSE}
 se <- deconv(se, source = "cross", method = "cibersort")
 ```
 
 ```{r plot2, echo  = FALSE, warning  = FALSE}
 ggplot(
-    cbind(data.frame(reshape2::melt(slot(se, "metadata")$prop), slot(se, "metadata")$meta)),
+    cbind(data.frame(melt(slot(se, "metadata")$prop), slot(se, "metadata")$meta)),
     aes(x = Var2, y = value, fill = Var2)
 ) +
     geom_point(
@@ -189,7 +194,7 @@ pca_res <- prcomp(t(assay(se)), rank. = 3, scale. = FALSE)
 pca_res_protein <- data.frame(pca_res[["x"]])
 pca_res_protein <- cbind(pca_res_protein, slot(se, "metadata")$meta$disease)
 colnames(pca_res_protein)[4] <- "disease"
-GGally::ggpairs(pca_res_protein,
+ggpairs(pca_res_protein,
     columns = seq_len(3), aes(color = disease, alpha = 0.5),
     upper = list(continuous = "points")
 ) + theme_classic()
@@ -199,7 +204,7 @@ pca_res <- prcomp(t(slot(se, "metadata")$gene_data), rank. = 3, scale. = FALSE)
 pca_res_gene <- data.frame(pca_res[["x"]])
 pca_res_gene <- cbind(pca_res_gene, slot(se, "metadata")$meta$disease)
 colnames(pca_res_gene)[4] <- "disease"
-GGally::ggpairs(pca_res_gene,
+ggpairs(pca_res_gene,
     columns = seq_len(3), aes(color = disease, alpha = 0.5),
     upper = list(continuous = "points")
 ) + theme_classic()
@@ -310,7 +315,7 @@ table(slot(se, "metadata")$SNP_data[idx, ])
 
 ```{r plot3, echo  = FALSE}
 ggplot(
-    data.frame(reshape2::melt(data.frame(cbind(df_res, genotype = slot(se, "metadata")$SNP_data[idx, ])), id.vars = c("genotype"))),
+    data.frame(melt(data.frame(cbind(df_res, genotype = slot(se, "metadata")$SNP_data[idx, ])), id.vars = c("genotype"))),
     aes(x = factor(genotype), y = value, fill = variable)
 ) +
     geom_point(

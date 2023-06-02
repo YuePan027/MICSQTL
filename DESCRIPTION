@@ -1,7 +1,7 @@
 Package: MICSQTL
 Type: Package
 Title: MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci)
-Version: 0.99.2
+Version: 0.99.3
 Authors@R: c(person("Yue", "Pan", role = c("aut", "cre"),
                      email = "Yue.Pan@STJUDE.ORG",
                      comment = c(ORCID = "0000-0003-1958-2744")),
@@ -35,7 +35,7 @@ Imports:
     glue,
     methods
 Depends: 
-    R (>= 4.2.0),
+    R (>= 4.3.0),
     SummarizedExperiment,
     stats
 RoxygenNote: 7.2.3

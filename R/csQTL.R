@@ -78,13 +78,14 @@ csQTL <- function(se, BPPARAM = bpparam()) {
                 )
                 res_table <- csTest(fitted_model,
                     coef = colnames(design),
-                    cell_type = NULL
+                    cell_type = NULL,
+                    verbose = FALSE
                 )
                 res_table[["SNP"]] <- SNP_ID[test_protein[i]]
                 return(res_table)
-            }, BPPARAM = BPPARAM) %>%
-                suppressWarnings() %>%
-                suppressMessages()
+            }, BPPARAM = BPPARAM) #%>%
+                #suppressWarnings() #%>%
+                #suppressMessages()
 
             res_df <- data.frame(matrix(unlist(lapply(
                 seq_len(ncol(prop)),

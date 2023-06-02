@@ -4,7 +4,7 @@
 \alias{CIBERSORT}
 \title{CIBERSORT is an analytical tool developed by Newman et al. to provide an
 estimation of the abundances of member cell types in a mixed cell population,
- using gene expression data.}
+using gene expression data.}
 \usage{
 CIBERSORT(
   sig_matrix,
@@ -50,7 +50,7 @@ cibersrot with immune cell fractions
 \description{
 CIBERSORT is an analytical tool developed by Newman et al. to provide an
 estimation of the abundances of member cell types in a mixed cell population,
- using gene expression data.
+using gene expression data.
 }
 \author{
 Aaron M. Newman, Stanford University (amnewman@stanford.edu)

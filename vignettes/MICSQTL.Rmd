@@ -38,16 +38,12 @@ Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to
 # Install
 # options(download.file.method = "wininet")
 # devtools::install_github("YuePan027/MICSQTL")
-package_names <- c("reshape2", "RColorBrewer", "GGally", "ggplot2")
-
-# Check and install packages
-for (pkg in package_names) {
-  if (!require(pkg, character.only = TRUE)) {
-    install.packages(pkg)
-    library(pkg, character.only = TRUE)
-  }
-}
 library(MICSQTL)
+library(reshape2)
+library(RColorBrewer)
+library(GGally)
+library(ggplot2)
+
 ```
 
 # Quick start

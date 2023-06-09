@@ -17,7 +17,7 @@ sequencing. We use matched transcriptome-proteome from human brain
 frontal cortex tissue samples to demonstrate the input and output of our
 tool.
 
-![MICSQTL workflow.](fig1.PNG)
+![MICSQTL workflow.](./vignettes/fig1.PNG)
 
 ## Install
 

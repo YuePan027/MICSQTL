@@ -1,6 +1,5 @@
 #' Estimation of cellular expression in high-throughput data
-#' from heterogeneous
-#'  tissues
+#' from heterogeneous tissues
 #'
 #' This function returns a `SummarizedExperiment` object including
 #' deconvoluted cellular sample-wise expression.

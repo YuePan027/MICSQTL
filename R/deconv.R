@@ -128,7 +128,7 @@ deconv <- function(se,
     methods::slot(se, "metadata")$prop <- prop
     if(iter){
         TCA_iter <- function(ini_prop, max_iter, diff_max){
-            for (i in 1:max_iter){
+            for (i in seq_len(max_iter)){
                 #cat("iter", i, "\n")
                 tca_res <- TCA::tca(
                     X = assay(se)[mrk_prot, ],
@@ -137,13 +137,13 @@ deconv <- function(se,
                     refit_W.sparsity = length(mrk_prot)
                 )
                 diff <- abs(ini_prop - tca_res$W)
-                cat("diff = ", max(diff), "\n")
+                #cat("diff = ", max(diff), "\n")
                 if(max(diff) < diff_max){
-                    cat("converged", "\n")
+                    #cat("converged", "\n")
                     return(tca_res$W)
                 } else if(i == max_iter){
-                    cat("reach max iter", "\n")
-                    cat(colnames(diff)[col(diff)[diff==max(diff)]])
+                    #cat("reach max iter", "\n")
+                    #cat(colnames(diff)[col(diff)[diff==max(diff)]])
                     return(tca_res$W)
                 } else{
                     ini_prop <- tca_res$W

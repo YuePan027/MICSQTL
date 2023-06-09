@@ -20,10 +20,6 @@ biocViews: GeneExpression, Genetics, Proteomics, RNASeq, Sequencing, SingleCell,
 Imports: 
     TCA,
     nnls,
-    e1071,
-    preprocessCore,
-    tidyverse,
-    tibble,
     purrr,
     TOAST,
     magrittr,
@@ -31,11 +27,10 @@ Imports:
     ggplot2,
     ggpubr,
     ggridges,
-    parallel,
     glue,
     methods
 Depends: 
-    R (>= 4.3.0),
+    R (>= 4.2.0),
     SummarizedExperiment,
     stats
 RoxygenNote: 7.2.3

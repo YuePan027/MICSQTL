@@ -5,7 +5,14 @@
 \title{Estimation of cellular composition in high-throughput data from
 heterogeneous tissues}
 \usage{
-deconv(se, source = "protein", method = "cibersort")
+deconv(
+  se,
+  source = "protein",
+  method = "nnls",
+  iter = FALSE,
+  Max_iter = 20,
+  Diff_max = 0.015
+)
 }
 \arguments{
 \item{se}{A `SummarizedExperiment` object with bulk protein expression
@@ -27,13 +34,19 @@ proteome deconvolution based on
 pre-estimated transcriptome proportion.}
 
 \item{method}{A character string denotes which deconvolution method to use.
-In the current version, only
-`CIBERSORT` or `nnls` is supported.}
+In the current version, only `nnls` is supported for single source.}
+
+\item{iter}{If TRUE, iterate estimated proportion until converged.}
+
+\item{Max_iter}{The maximum number of iterations if not converged.}
+
+\item{Diff_max}{The convergence metric for each iteration, 
+defined as the maximum difference from the previous iteration.}
 }
 \value{
 A `SummarizedExperiment`. The cell-type proportion estimates for
 each sample will be stored as an
-element start with `prop` (depends on `source`) in `metadata` slot.
+element start with `prop` in `metadata` slot.
 }
 \description{
 This function returns a `SummarizedExperiment` object including cell-type
@@ -41,10 +54,10 @@ proportion estimates for each sample.
 }
 \details{
 This is a function developed to implement cell-type proportion deconvolution
-using either `CIBERSORT` or `nnls`.
+using either single or cross sources.
 }
 \examples{
 data(se)
-se <- deconv(se, source = "protein", method = "cibersort")
+se <- deconv(se, source = "protein", method = "nnls")
 
 }

@@ -1,7 +1,7 @@
 MICSQTL: Multi-omic deconvolution, Integration and Cell-type-specific
 Quantitative Trait Loci
 ================
-
+truetrue
 
 # Introduction
 
@@ -17,14 +17,14 @@ sequencing. We use matched transcriptome-proteome from human brain
 frontal cortex tissue samples to demonstrate the input and output of our
 tool.
 
-![MICSQTL workflow.](./vignettes/fig1.PNG)
+![MICSQTL workflow.](fig1.PNG)
 
 ## Install
 
 ``` r
 # Install
-options(download.file.method = "wininet") # comment if not windows system
-devtools::install_github("YuePan027/MICSQTL")
+# options(download.file.method = "wininet")
+# devtools::install_github("YuePan027/MICSQTL")
 library(MICSQTL)
 library(reshape2)
 library(RColorBrewer)
@@ -61,6 +61,9 @@ containing the following elements:
     (cell types), which serves as a reference of known cellular
     signatures.
 
+-   prop_gene: A pre-defined deconvoluted transcriptome proportion
+    matrix.
+
 -   SNP_data: A sparse matrix with 2000 rows (SNP), which stores the
     information of genetic variants at each location from one chromosome
     and 127 columns (sample, should match the sample in `protein_data`).
@@ -81,29 +84,8 @@ data(se)
 
 This step estimates cell type proportions per molecule type.
 
-In this current version, only `CIBERSORT` and `nnls` are supported as
-single-source deconvolution methods.
-
-``` r
-se <- deconv(se, source = "protein", method = "cibersort")
-```
-
-This step might take a while if there are many features in the signature
-matrix. The cell-type proportion estimates for each sample will be
-stored as an element (`prop`) in `metadata` slot.
-
-``` r
-head(slot(se, "metadata")$prop)
-#>               Astro      Micro    Neuron     Oligo
-#> 2014_2194 0.1859424 0.06142760 0.6216158 0.1310142
-#> 2014_2195 0.2041841 0.10161331 0.5915177 0.1026848
-#> 2014_2200 0.2129030 0.07862809 0.5673769 0.1410921
-#> 2014_2622 0.2660539 0.05860571 0.5737932 0.1015472
-#> 2014_2625 0.1938783 0.07005880 0.6028512 0.1332117
-#> 2015_1    0.2070628 0.10253712 0.5513774 0.1390227
-```
-
-![](./vignettes/plot1-1.png)<!-- -->
+In this current version, only `nnls` is supported as single-source
+deconvolution methods.
 
 Alternatively, if there are cell-type proportion estimates results
 generated using other methods or obtained from other sources, just save
@@ -113,64 +95,30 @@ estimates must match the samples from bulk protein expression data.
 
 ## Cross-source cell-type proportion deconvolution (optional)
 
-The pure cell proteomics reference matrix may be lacking due to the
-limitations in single cell proteomics technologies. Here, we provide
-cross-source cell-type fraction deconvolution based on matched bulk
-transcriptome-proteome. In the example below, we show how to estimate
-protein proportions by borrowing information from deconvoluted
-transcriptomes.
+The reference matrix for pure cell proteomics may be incomplete due to
+the limitations of single-cell proteomics technologies. To address this,
+we propose a cross-source cell-type fraction deconvolution method that
+leverages matched bulk transcriptome-proteome data. In the following
+example, we demonstrate how to estimate protein proportions by utilizing
+information from deconvoluted transcriptomes.
+
+Please note that the process described assumes that pre-defined
+deconvoluted transcriptome proportions are available, which are stored
+as prop_gene in the metadata slot. In the provided example, the
+estimated proportions were obtained using
+[CIBERSORT](https://cibersort.stanford.edu/). However, users have the
+flexibility to try other methods such as MuSiC, among others.
 
 ``` r
-se <- deconv(se, source = "cross", method = "cibersort")
-#> INFO [2023-04-24 16:01:49] Starting tca...
-#> INFO [2023-04-24 16:01:49] Validating input...
-#> INFO [2023-04-24 16:01:49] Starting re-estimation of W...
-#> INFO [2023-04-24 16:01:49] Performing feature selection using refactor...
-#> INFO [2023-04-24 16:01:49] Starting refactor...
-#> INFO [2023-04-24 16:01:49] Running PCA on X using rand_svd == TRUE...
-#> INFO [2023-04-24 16:01:49] Computing a low rank approximation of X...
-#> INFO [2023-04-24 16:01:49] Calculating the distance of each feature from its low rank approximation...
-#> INFO [2023-04-24 16:01:49] Computing the ReFACTor components based on the top 1345 features with lowest distances...
-#> INFO [2023-04-24 16:01:49] Finished refactor.
-#> INFO [2023-04-24 16:01:49] Fitting the TCA model using the selected features for re-estimating W...
-#> INFO [2023-04-24 16:01:49] Iteration 1 out of 10 external iterations (fitting all parameters including W)...
-#> INFO [2023-04-24 16:01:49] Fitting means and variances...
-#> INFO [2023-04-24 16:01:49] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-24 16:01:50] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-24 16:01:50] Internal loop converged.
-#> INFO [2023-04-24 16:01:50] Fitting W...
-#> INFO [2023-04-24 16:01:54] Iteration 2 out of 10 external iterations (fitting all parameters including W)...
-#> INFO [2023-04-24 16:01:54] Fitting means and variances...
-#> INFO [2023-04-24 16:01:54] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-24 16:01:54] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-24 16:01:55] Iteration 3 out of 10 internal iterations...
-#> INFO [2023-04-24 16:01:55] Internal loop converged.
-#> INFO [2023-04-24 16:01:55] Fitting W...
-#> INFO [2023-04-24 16:01:59] Iteration 3 out of 10 external iterations (fitting all parameters including W)...
-#> INFO [2023-04-24 16:01:59] Fitting means and variances...
-#> INFO [2023-04-24 16:01:59] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-24 16:02:00] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-24 16:02:00] Internal loop converged.
-#> INFO [2023-04-24 16:02:00] Fitting W...
-#> INFO [2023-04-24 16:02:03] Iteration 4 out of 10 external iterations (fitting all parameters including W)...
-#> INFO [2023-04-24 16:02:03] Fitting means and variances...
-#> INFO [2023-04-24 16:02:03] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-24 16:02:04] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-24 16:02:04] Internal loop converged.
-#> INFO [2023-04-24 16:02:04] Fitting W...
-#> INFO [2023-04-24 16:02:08] External loop converged.
-#> INFO [2023-04-24 16:02:08] Calculate p-values for deltas and gammas.
-#> INFO [2023-04-24 16:02:10] Fitting the TCA model given the updated W...
-#> INFO [2023-04-24 16:02:10] Fitting means and variances...
-#> INFO [2023-04-24 16:02:10] Iteration 1 out of 10 internal iterations...
-#> INFO [2023-04-24 16:02:10] Iteration 2 out of 10 internal iterations...
-#> INFO [2023-04-24 16:02:10] Iteration 3 out of 10 internal iterations...
-#> INFO [2023-04-24 16:02:11] Internal loop converged.
-#> INFO [2023-04-24 16:02:11] Calculate p-values for deltas and gammas.
-#> INFO [2023-04-24 16:02:12] Finished tca.
+se <- deconv(se, source = "cross")
 ```
 
-![](./vignettes/plot2-1.png)<!-- -->
+![](README_files/figure-gfm/plot2-1.png)<!-- -->
+
+Please note that for a more accurate and stable result, you can
+iteratively update the proportion by setting `iter = TRUE`. This allows
+the estimation to be refined through multiple iterations until
+convergence.
 
 ## Integrative analysis
 
@@ -200,7 +148,7 @@ cns_plot(se,
 #> Picking joint bandwidth of 0.00881
 ```
 
-![](./vignettes/ajive-1.png)<!-- -->
+![](README_files/figure-gfm/ajive-1.png)<!-- -->
 
 ### Comparison to PCA
 
@@ -209,13 +157,13 @@ pca_res <- prcomp(t(assay(se)), rank. = 3, scale. = FALSE)
 pca_res_protein <- data.frame(pca_res[["x"]])
 pca_res_protein <- cbind(pca_res_protein, slot(se, "metadata")$meta$disease)
 colnames(pca_res_protein)[4] <- "disease"
-GGally::ggpairs(pca_res_protein,
+ggpairs(pca_res_protein,
     columns = seq_len(3), aes(color = disease, alpha = 0.5),
     upper = list(continuous = "points")
 ) + theme_classic()
 ```
 
-![](./vignettes/pca-1.png)<!-- -->
+![](README_files/figure-gfm/pca-1.png)<!-- -->
 
 ``` r
 
@@ -224,13 +172,13 @@ pca_res <- prcomp(t(slot(se, "metadata")$gene_data), rank. = 3, scale. = FALSE)
 pca_res_gene <- data.frame(pca_res[["x"]])
 pca_res_gene <- cbind(pca_res_gene, slot(se, "metadata")$meta$disease)
 colnames(pca_res_gene)[4] <- "disease"
-GGally::ggpairs(pca_res_gene,
+ggpairs(pca_res_gene,
     columns = seq_len(3), aes(color = disease, alpha = 0.5),
     upper = list(continuous = "points")
 ) + theme_classic()
 ```
 
-![](./vignettes/pca-2.png)<!-- -->
+![](README_files/figure-gfm/pca-2.png)<!-- -->
 
 ## Feature filtering
 
@@ -321,9 +269,9 @@ se <- feature_filter(se,
     filter_geno = 0.05,
     ref_position = "TSS"
 )
-#> Filter SNP based on distance for proteinABCA2
-#> Filter SNP based on distance for proteinABCA1
-#> Filter SNP based on distance for proteinAGTPBP1
+#> Filter SNP based on distance for protein ABCA2
+#> Filter SNP based on distance for protein ABCA1
+#> Filter SNP based on distance for protein AGTPBP1
 ```
 
 In this example, the number of SNPs corresponding to each protein after
@@ -353,7 +301,7 @@ system.time(se <- csQTL(se))
 #> csQTL test for protein ABCA2
 #> csQTL test for protein AGTPBP1
 #>    user  system elapsed 
-#>    1.67    0.72  161.28
+#>    1.65    0.89  154.30
 ```
 
 We can check the results from csQTL analysis for one of target proteins:
@@ -361,13 +309,20 @@ We can check the results from csQTL analysis for one of target proteins:
 ``` r
 res <- slot(se, "metadata")$TOAST_output[[2]]
 head(res[order(apply(res, 1, min)), ])
-#>    protein         SNP      Astro   ExNeuron   InNeuron        Micro      Oligo
-#> 1    ABCA2 9:137179658 0.70063637 0.02088146 0.01155512 1.170298e-06 0.01516530
-#> 20   ABCA2 9:137341600 0.43471672 0.26864381 0.96687842 2.159853e-01 0.02772581
-#> 16   ABCA2 9:136630751 0.02846949 0.27338745 0.40923017 6.740353e-04 0.08551188
-#> 6    ABCA2 9:136950118 0.84571272 0.05646615 0.16485654 5.752822e-01 0.16853317
-#> 18   ABCA2 9:136911140 0.30434963 0.67805793 0.05797402 5.249282e-01 0.12799572
-#> 8    ABCA2 9:136417159 0.60471596 0.50112666 0.72426787 7.299528e-01 0.06614854
+#>    protein         SNP      Astro   ExNeuron   InNeuron        Micro
+#> 20   ABCA2 9:137341600 0.79285955 0.30763334 0.98265834 3.269529e-01
+#> 8    ABCA2 9:136417159 0.44438506 0.34552330 0.84110974 7.881551e-01
+#> 12   ABCA2 9:137238626 0.95156516 0.57109961 0.04382715 1.155626e-02
+#> 1    ABCA2 9:137179658 0.91303086 0.20309228 0.04625565 3.962209e-05
+#> 6    ABCA2 9:136950118 0.91123211 0.04722635 0.13748034 6.596898e-01
+#> 16   ABCA2 9:136630751 0.05187403 0.47704608 0.63004912 4.619814e-03
+#>          Oligo
+#> 20 0.007780449
+#> 8  0.039815389
+#> 12 0.694488671
+#> 1  0.108280025
+#> 6  0.130649793
+#> 16 0.163604428
 ```
 
 ## TCA tensor deconvolution
@@ -383,17 +338,17 @@ type (restricted to first 5 proteins and first 5 samples):
 
 ``` r
 se <- TCA_deconv(se, prop = slot(se, "metadata")$prop)
-#> INFO [2023-04-24 16:07:22] Validating input...
-#> INFO [2023-04-24 16:07:22] Starting tensor for estimating Z...
-#> INFO [2023-04-24 16:07:22] Estimate tensor...
-#> INFO [2023-04-24 16:07:26] Finished estimating tensor.
+#> INFO [2023-06-09 13:33:01] Validating input...
+#> INFO [2023-06-09 13:33:01] Starting tensor for estimating Z...
+#> INFO [2023-06-09 13:33:01] Estimate tensor...
+#> INFO [2023-06-09 13:33:05] Finished estimating tensor.
 slot(se, "metadata")$TCA_deconv[["Astro"]][seq_len(5), seq_len(5)]
 #>       2014_2194 2014_2195 2014_2200 2014_2622 2014_2625
-#> AAGAB  16.27985  16.27980  16.27968  16.27970  16.27972
-#> AARS2  18.33094  18.17958  18.25149  18.27929  18.22594
-#> AASS   18.01783  17.82069  17.94317  18.07307  17.83079
-#> ABAT   23.09636  23.60231  23.22276  23.01140  22.68401
-#> ABCA1  16.31134  16.64555  16.16122  15.86103  16.11769
+#> AAGAB  16.18578  16.18576  16.18552  16.18559  16.18561
+#> AARS2  18.43365  18.21101  18.32831  18.35272  18.29298
+#> AASS   18.16801  18.01357  18.11252  18.11842  18.04431
+#> ABAT   23.19141  23.67366  23.23942  23.12347  22.93616
+#> ABCA1  16.35638  16.75004  16.18998  16.06425  16.14477
 ```
 
 The figure below depict the cell-type-specific expression in one example
@@ -414,23 +369,25 @@ table(slot(se, "metadata")$SNP_data[idx, ])
 #> 51 67  9
 ```
 
-![](./vignettes/plot3-1.png)<!-- -->
+![](README_files/figure-gfm/plot3-1.png)<!-- -->
 
 Such patterns may not be profound at bulk level.
 
 ``` r
 df <- assay(se)
 df <- df[which(rownames(df) == "ABCA2"), ]
-df_test <- data.frame(value = as.vector(t(df)), genotype = slot(se, "metadata")$SNP_data[idx, ])
+df_test <- data.frame(
+    value = as.vector(t(df)),
+    genotype = slot(se, "metadata")$SNP_data[idx, ]
+)
 ```
 
-![](./vignettes/plot4-1.png)<!-- -->
+![](README_files/figure-gfm/plot4-1.png)<!-- -->
 
 # Licenses of the analysis methods
 
-| method                                                                 | citation                                                                                                                                                                                                 |
-|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [CIBERSORT](https://cibersort.stanford.edu/)                           | Newman, A. M., Liu, C. L., Green, M. R., Gentles, A. J., Feng, W., Xu, Y., … Alizadeh, A. A. (2015). Robust enumeration of cell subsets from tissue expression profiles. Nature Methods, 12(5), 453–457. |
-| [TCA](https://cran.r-project.org/web/packages/TCA/index.html)          | Rahmani, Elior, et al. “Cell-type-specific resolution epigenetics without the need for cell sorting or single-cell biology.” Nature communications 10.1 (2019): 3417.                                    |
-| [AJIVE](https://github.com/idc9/r_jive)                                | Feng, Qing, et al. “Angle-based joint and individual variation explained.” Journal of multivariate analysis 166 (2018): 241-265.                                                                         |
-| [TOAST](http://bioconductor.org/packages/release/bioc/html/TOAST.html) | Li, Ziyi, and Hao Wu. “TOAST: improving reference-free cell composition estimation by cross-cell type differential analysis.” Genome biology 20.1 (2019): 1-17.                                          |
+| method                                                                 | citation                                                                                                                                                              |
+|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [TCA](https://cran.r-project.org/web/packages/TCA/index.html)          | Rahmani, Elior, et al. “Cell-type-specific resolution epigenetics without the need for cell sorting or single-cell biology.” Nature communications 10.1 (2019): 3417. |
+| [AJIVE](https://github.com/idc9/r_jive)                                | Feng, Qing, et al. “Angle-based joint and individual variation explained.” Journal of multivariate analysis 166 (2018): 241-265.                                      |
+| [TOAST](http://bioconductor.org/packages/release/bioc/html/TOAST.html) | Li, Ziyi, and Hao Wu. “TOAST: improving reference-free cell composition estimation by cross-cell type differential analysis.” Genome biology 20.1 (2019): 1-17.       |

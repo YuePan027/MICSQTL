@@ -17,6 +17,8 @@ annotations of each protein from `protein_data`.}
 cellular signatures.}
   \item{gene_data}{A data frame with 2867 rows (genes) and
 127 columns (sample).}
+  \item{prop_gene}{A pre-defined deconvoluted transcriptome 
+  proportion matrix.}
   \item{ref_gene}{A signature matrix with 4872 rows (genes) and 5 columns
 (cell types), which serves as a reference of known cellular signatures.}
   \item{SNP_data}{A sparse matrix with 2000 rows (SNP), which stores the

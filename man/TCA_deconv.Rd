@@ -40,7 +40,7 @@ cell-type-specific expression per bulk sample using `TCA`.
 }
 \examples{
 data(se)
-se <- deconv(se, source = "protein", method = "cibersort")
+se <- deconv(se, source = "protein", method = "nnls")
 se <- feature_filter(se,
     target_protein = c("ABCA1", "ABCA2"),
     filter_method = c("allele", "distance"), filter_allele = 0.15,

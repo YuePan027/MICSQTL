@@ -45,7 +45,7 @@ expression using `TOAST`.
 }
 \examples{
 data(se)
-se <- deconv(se, source = "protein", method = "cibersort")
+se <- deconv(se, source = "protein", method = "nnls")
 target_protein <- c("ABCA1")
 se <- feature_filter(se,
     target_protein = target_protein,

@@ -71,6 +71,8 @@ the following elements:
    
 - ref_gene: A signature matrix with 4872 rows (genes) and 5 columns 
 (cell types), which serves as a reference of known cellular signatures.
+
+- prop_gene: A pre-defined deconvoluted transcriptome proportion matrix.
    
 - SNP_data: A sparse matrix with 2000 rows (SNP), which stores the information 
 of genetic variants at each location from one chromosome and 127 columns 
@@ -92,59 +94,23 @@ data(se)
 
 This step estimates cell type proportions per molecule type.
 
-In this current version, only `CIBERSORT` and `nnls` are supported as single-source deconvolution methods.
-
-```{r deconv1, results=FALSE}
-se <- deconv(se, source = "protein", method = "cibersort")
-```
-
-This step might take a while if there are many features
-in the signature matrix. The cell-type proportion estimates for each
-sample will be stored as an element (`prop`) in `metadata` slot.
-
-```{r deconv2, fig.width=7, fig.height=5, warnings = FALSE}
-head(slot(se, "metadata")$prop)
-```
-
-```{r plot1, echo  = FALSE, warning  = FALSE}
-mycolors1 <- brewer.pal(5, "Set2")[c(2, 1, 5, 3, 4)]
-ggplot(
-    cbind(data.frame(melt(slot(se, "metadata")$prop), slot(se, "metadata")$meta)),
-    aes(x = Var2, y = value, fill = Var2)
-) +
-    geom_point(
-        position = position_jitterdodge(
-            jitter.width = 0.1,
-            dodge.width = 0.7
-        ),
-        aes(fill = Var2, color = Var2),
-        pch = 21, alpha = 0.5
-    ) +
-    geom_boxplot(lwd = 0.7, outlier.shape = NA) +
-    theme_classic() +
-    facet_wrap(~disease) +
-    scale_fill_manual(values = mycolors1[c(1, 2, 4, 5)]) +
-    xlab("Cell type") +
-    ylab("Estimated proportion") +
-    theme(legend.position = "none")
-```
+In this current version, only `nnls` is supported as single-source deconvolution methods.
 
 Alternatively, if there are cell-type proportion estimates results generated using other methods or obtained from other sources, just save that as an element (`prop`) in `metadata` slot and this deconvolution step can be skipped. Note that the samples in the cell-type proportion estimates must match the samples from bulk protein expression data.
 
 
 ## Cross-source cell-type proportion deconvolution (optional)
 
-The pure cell proteomics reference matrix may be lacking due to the limitations 
-in single cell proteomics technologies. Here, we provide cross-source cell-type fraction
-deconvolution based on matched bulk transcriptome-proteome. In
-the example below, we show how to estimate protein proportions by borrowing 
-information from deconvoluted transcriptomes. 
+The reference matrix for pure cell proteomics may be incomplete due to the limitations of single-cell proteomics technologies. To address this, we propose a cross-source cell-type fraction deconvolution method that leverages matched bulk transcriptome-proteome data. In the following example, we demonstrate how to estimate protein proportions by utilizing information from deconvoluted transcriptomes. 
+
+Please note that the process described assumes that pre-defined deconvoluted transcriptome proportions are available, which are stored as prop_gene in the metadata slot. In the provided example, the estimated proportions were obtained using [CIBERSORT](https://cibersort.stanford.edu/). However, users have the flexibility to try other methods such as MuSiC, among others. 
 
 ```{r cross, message  = FALSE, warning  = FALSE, results=FALSE}
-se <- deconv(se, source = "cross", method = "cibersort")
+se <- deconv(se, source = "cross")
 ```
 
 ```{r plot2, echo  = FALSE, warning  = FALSE}
+mycolors <- brewer.pal(5, "Set2")[c(2,1,5,3,4)]
 ggplot(
     cbind(data.frame(melt(slot(se, "metadata")$prop), slot(se, "metadata")$meta)),
     aes(x = Var2, y = value, fill = Var2)
@@ -160,12 +126,13 @@ ggplot(
     geom_boxplot(lwd = 0.7, outlier.shape = NA) +
     theme_classic() +
     facet_wrap(~disease) +
-    scale_fill_manual(values = mycolors1) +
+    scale_fill_manual(values = mycolors) +
     xlab("Cell type") +
     ylab("Estimated proportion") +
     theme(legend.position = "none")
 ```
 
+Please note that for a more accurate and stable result, you can iteratively update the proportion by setting `iter = TRUE`. This allows the estimation to be refined through multiple iterations until convergence.
 
 ## Integrative analysis
 
@@ -325,7 +292,7 @@ ggplot(
     geom_boxplot(lwd = 0.7, outlier.shape = NA) +
     theme_classic() +
     facet_wrap(~variable, scales = "free") +
-    scale_fill_manual(values = mycolors1) +
+    scale_fill_manual(values = mycolors) +
     xlab("Genotype") +
     ylab("Deconvoluted expression") +
     theme(legend.position = "none")
@@ -361,7 +328,6 @@ ggplot(
 
 | method                                                                 | citation                                                                                                                                                                                                 |
 |------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [CIBERSORT](https://cibersort.stanford.edu/)                           | Newman, A. M., Liu, C. L., Green, M. R., Gentles, A. J., Feng, W., Xu, Y., … Alizadeh, A. A. (2015). Robust enumeration of cell subsets from tissue expression profiles. Nature Methods, 12(5), 453–457. |
 | [TCA](https://cran.r-project.org/web/packages/TCA/index.html)          | Rahmani, Elior, et al. “Cell-type-specific resolution epigenetics without the need for cell sorting or single-cell biology.” Nature communications 10.1 (2019): 3417.                                    |
 | [AJIVE](https://github.com/idc9/r_jive)                                | Feng, Qing, et al. “Angle-based joint and individual variation explained.” Journal of multivariate analysis 166 (2018): 241-265.                                                                         |
 | [TOAST](http://bioconductor.org/packages/release/bioc/html/TOAST.html) | Li, Ziyi, and Hao Wu. “TOAST: improving reference-free cell composition estimation by cross-cell type differential analysis.” Genome biology 20.1 (2019): 1-17. 

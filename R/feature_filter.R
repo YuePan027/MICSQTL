@@ -1,11 +1,10 @@
-#' Estimation of cellular composition in high-throughput data
-#' from heterogeneous tissues
+#' Feature filtering 
 #'
 #' This function returns a `SummarizedExperiment` object including SNPs used to
 #' test for each protein in downstream analysis.
 #'
-#' This is a function developed to implement cell-type proportion deconvolution
-#' using either `CIBERSORT` or `nnls`.
+#' This is a function developed to filter unwanted proteins or SNPs with less
+#' variation among samples for downstream analysis.
 #'
 #' @param se A `SummarizedExperiment` object with bulk protein expression data
 #' frame contained in `counts` slot.

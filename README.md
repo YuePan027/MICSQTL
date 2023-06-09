@@ -113,7 +113,7 @@ flexibility to try other methods such as MuSiC, among others.
 se <- deconv(se, source = "cross")
 ```
 
-![](README_files/figure-gfm/plot2-1.png)<!-- -->
+![](./vignettes/plot2-1.png)<!-- -->
 
 Please note that for a more accurate and stable result, you can
 iteratively update the proportion by setting `iter = TRUE`. This allows
@@ -148,7 +148,7 @@ cns_plot(se,
 #> Picking joint bandwidth of 0.00881
 ```
 
-![](README_files/figure-gfm/ajive-1.png)<!-- -->
+![](./vignettes/ajive-1.png)<!-- -->
 
 ### Comparison to PCA
 
@@ -163,7 +163,7 @@ ggpairs(pca_res_protein,
 ) + theme_classic()
 ```
 
-![](README_files/figure-gfm/pca-1.png)<!-- -->
+![](./vignettes/pca-1.png)<!-- -->
 
 ``` r
 
@@ -178,7 +178,7 @@ ggpairs(pca_res_gene,
 ) + theme_classic()
 ```
 
-![](README_files/figure-gfm/pca-2.png)<!-- -->
+![](./vignettes/pca-2.png)<!-- -->
 
 ## Feature filtering
 
@@ -369,7 +369,7 @@ table(slot(se, "metadata")$SNP_data[idx, ])
 #> 51 67  9
 ```
 
-![](README_files/figure-gfm/plot3-1.png)<!-- -->
+![](./vignettes/plot3-1.png)<!-- -->
 
 Such patterns may not be profound at bulk level.
 
@@ -382,7 +382,7 @@ df_test <- data.frame(
 )
 ```
 
-![](README_files/figure-gfm/plot4-1.png)<!-- -->
+![](./vignettes/plot4-1.png)<!-- -->
 
 # Licenses of the analysis methods
 

@@ -31,6 +31,9 @@
 #' (disease status and gender) as metadata.}
 #'   \item{prop}{An example cellular composition by running `deconv` function.}
 #' }
+#' 
+#' @examples
+#' data(se)
 #' @keywords datasets
 #'
 NULL

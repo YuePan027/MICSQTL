@@ -36,7 +36,9 @@
 #'
 #' @import SummarizedExperiment
 #' @importFrom magrittr "%>%"
-#' @importFrom methods slot
+#' @importFrom nnls nnls
+#' @importFrom TCA tca
+#' @importFrom S4Vectors metadata
 #' 
 #'
 #' @export
@@ -54,7 +56,7 @@ deconv <- function(se,
         assay(se) <- as.data.frame(assay(se))
         in_use <- intersect(
             rownames(assay(se)),
-            rownames(methods::slot(se, "metadata")$ref_protein)
+            rownames(metadata(se)$ref_protein)
         )
         if (any(length(in_use) == 0)) {
             stop("None of the feaures in 'signature matrix' exist in bulk
@@ -62,12 +64,12 @@ deconv <- function(se,
         }
         protein_sub <- as.data.frame(assay(se)[in_use, , drop = FALSE])
         ref_protein <-
-            methods::slot(se, "metadata")$ref_protein[in_use, , drop = FALSE]
+            metadata(se)$ref_protein[in_use, , drop = FALSE]
         
         if (method == "nnls") {
             decon_nnls <- apply(
                 protein_sub, 2,
-                function(y) nnls::nnls(as.matrix(ref_protein), y)$x
+                function(y) nnls(as.matrix(ref_protein), y)$x
             ) %>% t()
             prop <- decon_nnls / rowSums(decon_nnls)
             rownames(prop) <- colnames(protein_sub)
@@ -76,19 +78,19 @@ deconv <- function(se,
     }
     if (source == "transcript") {
         in_use <- intersect(
-            rownames(methods::slot(se, "metadata")$gene_data),
-            rownames(methods::slot(se, "metadata")$ref_gene)
+            rownames(metadata(se)$gene_data),
+            rownames(metadata(se)$ref_gene)
         )
         if (any(length(in_use) == 0)) {
             stop("None of the feaures in 'signature matrix' exist in bulk
                  expression data.")
         }
         gene_sub <-
-            as.data.frame(methods::slot(se, "metadata")$gene_data[in_use, ,
+            as.data.frame(metadata(se)$gene_data[in_use, ,
                 drop = FALSE
             ])
         ref_gene <-
-            methods::slot(se, "metadata")$ref_gene[in_use, , drop = FALSE]
+            metadata(se)$ref_gene[in_use, , drop = FALSE]
     
         if (method == "nnls") {
             decon_nnls <- apply(gene_sub, 2, function(y) {
@@ -101,57 +103,52 @@ deconv <- function(se,
     }
     if (source == "cross") {
         in_use <- intersect(
-            rownames(methods::slot(se, "metadata")$gene_data),
-            rownames(methods::slot(se, "metadata")$ref_gene)
+            rownames(metadata(se)$gene_data),
+            rownames(metadata(se)$ref_gene)
         )
         if (any(length(in_use) == 0)) {
             stop("None of the feaures in 'signature matrix' exist in bulk
                  expression data.")
         }
         gene_sub <-
-            as.data.frame(methods::slot(se, "metadata")$gene_data[in_use, ,
+            as.data.frame(metadata(se)$gene_data[in_use, ,
                 drop = FALSE
             ])
         ref_gene <-
-            methods::slot(se, "metadata")$ref_gene[in_use, , drop = FALSE]
-        result <- methods::slot(se, "metadata")$prop_gene
+            metadata(se)$ref_gene[in_use, , drop = FALSE]
+        result <- metadata(se)$prop_gene
         ini_prop <- result[, seq_len(ncol(ref_gene))]
         mrk_prot <- intersect(rownames(assay(se)), in_use)
-        tca_res <- TCA::tca(
-            X = assay(se)[mrk_prot, ],
+        tca_res <- tca(
+            X = assay(se)[mrk_prot, , drop = FALSE],
             W = ini_prop,
             refit_W = TRUE,
             refit_W.sparsity = length(mrk_prot)
         )
         prop <- tca_res$W
     }
-    methods::slot(se, "metadata")$prop <- prop
+    metadata(se)$prop <- prop
     if(iter){
         TCA_iter <- function(ini_prop, max_iter, diff_max){
-            for (i in seq_len(max_iter)){
-                #cat("iter", i, "\n")
-                tca_res <- TCA::tca(
-                    X = assay(se)[mrk_prot, ],
-                    W = ini_prop,
-                    refit_W = TRUE,
-                    refit_W.sparsity = length(mrk_prot)
-                )
-                diff <- abs(ini_prop - tca_res$W)
-                #cat("diff = ", max(diff), "\n")
-                if(max(diff) < diff_max){
-                    #cat("converged", "\n")
-                    return(tca_res$W)
-                } else if(i == max_iter){
-                    #cat("reach max iter", "\n")
-                    #cat(colnames(diff)[col(diff)[diff==max(diff)]])
-                    return(tca_res$W)
-                } else{
-                    ini_prop <- tca_res$W
-                }
+          iter_idx <- 1
+          while (iter_idx < max_iter){
+            tca_res <- TCA::tca(
+              X = assay(se)[mrk_prot, , drop = FALSE],
+              W = ini_prop,
+              refit_W = TRUE,
+              refit_W.sparsity = length(mrk_prot)
+            )
+            diff <- abs(ini_prop - tca_res$W)
+            if(max(diff) < diff_max){
+              return(tca_res$W)
+            } else{
+              iter_idx <- iter_idx + 1
+              ini_prop <- tca_res$W
             }
+          }
         }
         Res <- TCA_iter(prop, Max_iter, Diff_max)
-        methods::slot(se, "metadata")$prop <- Res
+        metadata(se)$prop <- Res
     }
     return(se)
 }

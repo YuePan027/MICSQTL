@@ -3,8 +3,7 @@
 \name{TCA_deconv}
 \alias{TCA_deconv}
 \title{Estimation of cellular expression in high-throughput data
-from heterogeneous
- tissues}
+from heterogeneous tissues}
 \usage{
 TCA_deconv(se, test = "array", prop)
 }
@@ -46,6 +45,6 @@ se <- feature_filter(se,
     filter_method = c("allele", "distance"), filter_allele = 0.15,
     filter_geno = 0.05, ref_position = "TSS"
 )
-se <- TCA_deconv(se, prop = methods::slot(se, "metadata")$prop)
+se <- TCA_deconv(se, prop = metadata(se)$prop)
 
 }

@@ -22,13 +22,13 @@ cross_prop <- function(se, ini_prop, mrk_prot) {
     }
     mrk_prot <- intersect(rownames(assay(se)), mrk_prot)
     tca_res <- TCA::tca(
-        X = assay(se)[mrk_prot, ],
+        X = assay(se)[mrk_prot, , drop = FALSE],
         W = ini_prop,
         refit_W = TRUE,
         refit_W.sparsity = length(mrk_prot)
     )
     cross_prop <- tca_res$W
-    methods::slot(se, "metadata")$cross_prop <- cross_prop
+    metadata(se)$cross_prop <- cross_prop
     return(se)
 }
 
@@ -262,8 +262,6 @@ get_joint_decomposition <- function(X, joint_scores, full = TRUE) {
 # svd is computed.
 
 get_svd <- function(X, rank = NULL) {
-    # SVD <- get_svd(X, rank=2)
-
     if (is.null(rank)) {
         svd(X)
     } else if (rank == 0) {
@@ -440,9 +438,6 @@ ajive <- function(blocks, initial_signal_ranks, full = TRUE,
     }
 
     # TODO: should we give the option to center the data?
-    # if(center){
-    #     blocks <- lapply(blocks,function(X) scale(X, center=T, scale=FALSE))
-    # }
 
     # step 1: initial signal space extraction --------------------------------
     # initial estimate of signal space with SVD
@@ -471,7 +466,6 @@ ajive <- function(blocks, initial_signal_ranks, full = TRUE,
     joint_scores <- out$joint_scores
 
     joint_rank <- out[["rank_sel_results"]][["joint_rank_estimate"]]
-    # dim(joint_scores)[2]
 
 
     # step 3: final decomposition ----------------------------------------------

@@ -46,8 +46,8 @@ This function returns a `SummarizedExperiment` object including results from
 AJIVE (Angle based Joint and Individual Variation Explained),
 an integrative analysis tool, and common normalized scored based on it.
 This implemented the AJIVE algorithm 
-(see R version of [AJIVE package](https://github.com/idc9/r_jive) 
-or detailed discussion [AJIVE package] https://arxiv.org/pdf/1704.02060.pdf)) 
+(see R version of AJIVE package (https://github.com/idc9/r_jive)
+or detailed manuscript at https://arxiv.org/pdf/1704.02060.pdf)
 an integrative analysis method.
 It is useful when there are multiple data matrices measured on the same set
 of samples.

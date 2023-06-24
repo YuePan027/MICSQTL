@@ -26,7 +26,8 @@
 #' sample within that cell type.
 #'
 #' @import SummarizedExperiment
-#' @importFrom methods slot
+#' @importFrom S4Vectors metadata
+#' @importFrom TCA tensor tca
 #'
 #' @export
 #'
@@ -38,7 +39,7 @@
 #'     filter_method = c("allele", "distance"), filter_allele = 0.15,
 #'     filter_geno = 0.05, ref_position = "TSS"
 #' )
-#' se <- TCA_deconv(se, prop = methods::slot(se, "metadata")$prop)
+#' se <- TCA_deconv(se, prop = metadata(se)$prop)
 #'
 TCA_deconv <- function(se, test = "array", prop) {
     if (test == "array") {
@@ -48,22 +49,22 @@ TCA_deconv <- function(se, test = "array", prop) {
             refit_W = FALSE,
             verbose = FALSE
         )
-        res_full <- TCA::tensor(tca.mdl = res_tca, X = as.matrix(assay(se)))
+        res_full <- tensor(tca.mdl = res_tca, X = as.matrix(assay(se)))
         names(res_full) <- colnames(prop)
-        methods::slot(se, "metadata")$TCA_deconv <- res_full
+        metadata(se)$TCA_deconv <- res_full
     } else {
-        res_tca <- TCA::tca(
-            X = methods::slot(se, "metadata")[[test]],
+        res_tca <- tca(
+            X = metadata(se)[[test]],
             W = prop,
             refit_W = FALSE,
             verbose = FALSE
         )
         res_full <- TCA::tensor(
             tca.mdl = res_tca,
-            X = methods::slot(se, "metadata")[[test]]
+            X = metadata(se)[[test]]
         )
         names(res_full) <- colnames(prop)
-        methods::slot(se, "metadata")$TCA_deconv2 <- res_full
+        metadata(se)$TCA_deconv2 <- res_full
     }
 
     return(se)

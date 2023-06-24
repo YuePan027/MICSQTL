@@ -36,4 +36,7 @@ which stores Annotations of each SNP from `SNP_data`}
 \description{
 The example input files are organized as a `SummarizedExperiment `object.
 }
+\examples{
+data(se)
+}
 \keyword{datasets}

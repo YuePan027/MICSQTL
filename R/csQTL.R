@@ -38,7 +38,7 @@
 #' @importFrom BiocParallel bpparam
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map
-#' @importFrom methods slot
+#' @importFrom S4Vectors metadata
 #'
 #' @export
 #'
@@ -54,27 +54,26 @@
 #' se <- csQTL(se)
 #'
 csQTL <- function(se, BPPARAM = bpparam()) {
-    prop <- methods::slot(se, "metadata")$prop
+    prop <- metadata(se)$prop
     assay(se) <- as.data.frame(assay(se))
-    protein_tab <- as.data.frame(methods::slot(se, "metadata")$target_dat)
-    SNP_dat <- methods::slot(se, "metadata")$SNP_data
-    SNP_ID <- methods::slot(se, "metadata")$anno_SNP$ID
+    protein_tab <- as.data.frame(metadata(se)$target_dat)
+    SNP_dat <- metadata(se)$SNP_data
+    SNP_ID <- metadata(se)$anno_SNP$ID
 
     Res_TOAST <- lapply(
-        seq_len(length(methods::slot(se, "metadata")$choose_SNP_list)),
+        seq_len(length(metadata(se)$choose_SNP_list)),
         function(x) {
-            test_protein <- methods::slot(se, "metadata")$choose_SNP_list[[x]]
+            test_protein <- metadata(se)$choose_SNP_list[[x]]
             protein_name <-
-                names(methods::slot(se, "metadata")$choose_SNP_list)[x]
+                names(metadata(se)$choose_SNP_list)[x]
             message("csQTL test for protein ", protein_name, "\n")
 
             res <- bplapply(seq_len(length(test_protein)), function(i) {
                 design <- data.frame(factor(SNP_dat[test_protein[i], ]))
-                # data.frame(factor(t(SNP_dat)[, test_protein[i]]))
                 Design_out <- makeDesign(design, prop)
                 fitted_model <- fitModel(
                     Design_out,
-                    as.matrix(protein_tab[protein_name, ])
+                    as.matrix(protein_tab[protein_name, , drop = FALSE])
                 )
                 res_table <- csTest(fitted_model,
                     coef = colnames(design),
@@ -83,9 +82,7 @@ csQTL <- function(se, BPPARAM = bpparam()) {
                 )
                 res_table[["SNP"]] <- SNP_ID[test_protein[i]]
                 return(res_table)
-            }, BPPARAM = BPPARAM) #%>%
-                #suppressWarnings() #%>%
-                #suppressMessages()
+            }, BPPARAM = BPPARAM) 
 
             res_df <- data.frame(matrix(unlist(lapply(
                 seq_len(ncol(prop)),
@@ -95,10 +92,10 @@ csQTL <- function(se, BPPARAM = bpparam()) {
             )), ncol = ncol(prop)))
             colnames(res_df) <- colnames(prop)
             res_df$protein <- protein_name
-            res_df$SNP <- unlist(purrr::map(res, "SNP"))
-            return(res_df[, c("protein", "SNP", colnames(prop))])
+            res_df$SNP <- unlist(map(res, "SNP"))
+            return(res_df[, c("protein", "SNP", colnames(prop)), drop = FALSE])
         }
     )
-    methods::slot(se, "metadata")$TOAST_output <- Res_TOAST
+    metadata(se)$TOAST_output <- Res_TOAST
     return(se)
 }

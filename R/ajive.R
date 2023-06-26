@@ -41,7 +41,7 @@
 #' in `metadata` slot.
 #'
 #' @import SummarizedExperiment
-#' @importFrom methods slot
+#' @importFrom S4Vectors metadata
 #'
 #' @export
 #'
@@ -56,16 +56,16 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
         dat1 <- assay(se)
         if (use_marker) {
             in_use <- intersect(
-                rownames(methods::slot(se, "metadata")$gene_data),
-                rownames(methods::slot(se, "metadata")$ref_gene)
+                rownames(metadata(se)$gene_data),
+                rownames(metadata(se)$ref_gene)
             )
-            dat2 <- methods::slot(se, "metadata")[[test]][in_use, ]
+            dat2 <- metadata(se)[[test]][in_use, , drop = FALSE]
         } else {
-            dat2 <- methods::slot(se, "metadata")[[test]]
+            dat2 <- metadata(se)[[test]]
         }
     } else {
-        dat1 <- methods::slot(se, "metadata")$TCA_deconv[[level]]
-        dat2 <- methods::slot(se, "metadata")$TCA_deconv2[[level]]
+        dat1 <- metadata(se)$TCA_deconv[[level]]
+        dat2 <- metadata(se)$TCA_deconv2[[level]]
     }
 
     if (!all(colnames(dat1) == colnames(dat2))) {
@@ -77,11 +77,11 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
         scale(t(dat2), center = TRUE, scale = FALSE)
     )
     ajive_res <- ajive(blocks_test, ini_rank)
-    methods::slot(se, "metadata")$ajive_res <- ajive_res
+    metadata(se)$ajive_res <- ajive_res
     cns <- get_common_normalized_scores(ajive_res)
-    methods::slot(se, "metadata")$cns <- cns
+    metadata(se)$cns <- cns
     joint_rank <- ajive_res$joint_rank
-    methods::slot(se, "metadata")$joint_rank <- joint_rank
+    metadata(se)$joint_rank <- joint_rank
     return(se)
 }
 
@@ -116,8 +116,8 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
 #' @import SummarizedExperiment
 #' @import ggplot2
 #' @import ggridges
-#' @import ggpubr
-#' @importFrom methods slot
+#' @importFrom ggpubr ggarrange
+#' @importFrom S4Vectors metadata
 #'
 #' @export
 #'
@@ -131,9 +131,9 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
 #'
 cns_plot <- function(se, score = "cns_1", group_var = "disease",
                      scatter = FALSE, scatter_x, scatter_y) {
-    cns <- methods::slot(se, "metadata")$cns
+    cns <- metadata(se)$cns
     colnames(cns) <- paste("cns", seq_len(ncol(cns)), sep = "_")
-    df <- data.frame(cns, methods::slot(se, "metadata")$meta)
+    df <- data.frame(cns, metadata(se)$meta)
 
     p1 <- ggplot(
         df,
@@ -179,7 +179,7 @@ cns_plot <- function(se, score = "cns_1", group_var = "disease",
     }
 
     if (ncol(cns) < 2 | !scatter) {
-        return(ggpubr::ggarrange(p1, p2,
+        return(ggarrange(p1, p2,
             ncol = 2, nrow = 1,
             common.legend = TRUE
         ))
@@ -194,7 +194,7 @@ cns_plot <- function(se, score = "cns_1", group_var = "disease",
             geom_point() +
             scale_point_color_hue(l = 40) +
             theme_classic()
-        return(ggpubr::ggarrange(p1, p2, p3,
+        return(ggarrange(p1, p2, p3,
             ncol = 2, nrow = 2,
             common.legend = TRUE
         ))

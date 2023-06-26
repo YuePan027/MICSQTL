@@ -7,7 +7,7 @@ data <- matrix(rnorm(N * P, N, P), ncol = N)
 colnames(data) <- paste("subject", 1:ncol(data), sep = "_")
 rownames(data) <- paste("feature", 1:nrow(data), sep = "_")
 se <- SummarizedExperiment(assays = list(counts = data))
-metadata(se) <- list(meta = metadata)
+S4Vectors::metadata(se) <- list(meta = metadata)
 
 
 test_that("deconv function gives error for invalid inputs", {

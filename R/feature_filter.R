@@ -69,7 +69,7 @@
 #' @import SummarizedExperiment
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel bpparam
-#' @importFrom methods slot
+#' @importFrom S4Vectors metadata
 #'
 #' @export
 #'
@@ -93,51 +93,51 @@ feature_filter <- function(se,
     assay(se) <- as.data.frame(assay(se))
 
     if (!all(colnames(assay(se)) ==
-        colnames(methods::slot(se, "metadata")$SNP_data))) {
+        colnames(metadata(se)$SNP_data))) {
         stop("Samples in protein_data do not match that in SNP_data")
     }
 
     if (!is.null(target_protein)) {
-        methods::slot(se, "metadata")$target_dat <- assay(se)[target_protein, ]
-        # se <- se[target_protein, ]
+        metadata(se)$target_dat <- 
+          assay(se)[target_protein, , drop = FALSE]
     } else {
-        methods::slot(se, "metadata")$target_dat <- assay(se)
+        metadata(se)$target_dat <- assay(se)
         target_protein <- rownames(assay(se))
     }
 
     if (!is.null(target_SNP)) {
-        methods::slot(se, "metadata")$SNP_data <-
-            methods::slot(se, "metadata")$SNP_data[
-                match(target_SNP, methods::slot(se, "metadata")$anno_SNP$ID), ,
+        metadata(se)$SNP_data <-
+            metadata(se)$SNP_data[
+                match(target_SNP, metadata(se)$anno_SNP$ID), ,
                 drop = FALSE
             ]
-        methods::slot(se, "metadata")$anno_SNP <-
-            methods::slot(se, "metadata")$anno_SNP[
-                match(target_SNP, methods::slot(se, "metadata")$anno_SNP$ID), ,
+        metadata(se)$anno_SNP <-
+            metadata(se)$anno_SNP[
+                match(target_SNP, metadata(se)$anno_SNP$ID), ,
                 drop = FALSE
             ]
     }
 
     choose_SNP_list <-
-        rep(list(seq_len(nrow(methods::slot(se, "metadata")$SNP_data))),
+        rep(list(seq_len(nrow(metadata(se)$SNP_data))),
             each = length(target_protein)
         )
 
     if ("allele" %in% filter_method) {
-        prop <- apply(methods::slot(se, "metadata")$SNP_data, 1, prop_allele)
-        prop2 <- apply(methods::slot(se, "metadata")$SNP_data, 1, prop_geno)
+        prop <- apply(metadata(se)$SNP_data, 1, prop_allele)
+        prop2 <- apply(metadata(se)$SNP_data, 1, prop_geno)
         idx <- which(pmin(prop, 1 - prop) > filter_allele & prop2 > filter_geno)
-        methods::slot(se, "metadata")$SNP_data <-
-            methods::slot(se, "metadata")$SNP_data[idx, , drop = FALSE]
-        methods::slot(se, "metadata")$anno_SNP <-
-            methods::slot(se, "metadata")$anno_SNP[idx, , drop = FALSE]
+        metadata(se)$SNP_data <-
+            metadata(se)$SNP_data[idx, , drop = FALSE]
+        metadata(se)$anno_SNP <-
+            metadata(se)$anno_SNP[idx, , drop = FALSE]
         choose_SNP_list <-
-            rep(list(seq_len(nrow(methods::slot(se, "metadata")$SNP_data))),
+            rep(list(seq_len(nrow(metadata(se)$SNP_data))),
                 each = length(target_protein)
             )
     }
     if ("distance" %in% filter_method) {
-        anno_SNP <- methods::slot(se, "metadata")$anno_SNP
+        anno_SNP <- metadata(se)$anno_SNP
         choose_SNP_list <- bplapply(seq_len(length(target_protein)),
             function(i) {
                 message(
@@ -146,27 +146,26 @@ feature_filter <- function(se,
                 )
                 df <-
                     rowData(se)[which(rowData(se)$Symbol ==
-                        target_protein[i]), ]
+                        target_protein[i]), , drop = FALSE]
                 if (ref_position == "TSS") {
                     df$ref_pos <- df$Start
                 } else if (ref_position == "genebody") {
                     df$ref_pos <- (df$Start + df$end) / 2
                 }
                 idx2 <- which((abs(as.numeric(anno_SNP$POS) - df$ref_pos) <
-                    1000000) &
-                    anno_SNP$CHROM == df[1, 1])
+                    1000000) & anno_SNP$CHROM == 
+                      as.character(as.data.frame(df[1,1,drop=FALSE])))
                 return(idx2)
             },
             BPPARAM = BPPARAM
         )
         names(choose_SNP_list) <- target_protein
         idx3 <- which(unlist(lapply(choose_SNP_list, length)) != 0)
-        # se <- se[idx3,]
-        methods::slot(se, "metadata")$target_dat <-
-            methods::slot(se, "metadata")$target_dat[idx3, ]
+        metadata(se)$target_dat <-
+            metadata(se)$target_dat[idx3, , drop = FALSE]
         choose_SNP_list <- choose_SNP_list[idx3]
     }
 
-    methods::slot(se, "metadata")$choose_SNP_list <- choose_SNP_list
+    metadata(se)$choose_SNP_list <- choose_SNP_list
     return(se)
 }

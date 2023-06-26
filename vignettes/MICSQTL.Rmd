@@ -13,7 +13,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 abstract: >
-  MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by borrowing information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci mapping at cellular resolution.
+  MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by borrowing information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci (QTL) mapping at cellular resolution. This is a novel pipeline for multi-omic integrative data analysis that fulfills the need for comprehensive analysis of diverse data sources. This pipeline enables valuable insights into cellular composition, facilitates cell-type-specific protein QTL mapping, and streamlines multi-modal data integration and dimension reduction.
 ---
 
 
@@ -31,8 +31,9 @@ Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to
 ![MICSQTL workflow.](fig1.PNG)
 
 
+# Install 
 
-## Install
+## Install MICSQTL
 
 ```{r setup, message  = FALSE, warning  = FALSE}
 # Install
@@ -40,6 +41,11 @@ if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("MICSQTL")
 library(MICSQTL)
+```
+
+## Othter packages
+
+```{r lib, message  = FALSE, warning  = FALSE}
 library(reshape2)
 library(RColorBrewer)
 library(GGally)

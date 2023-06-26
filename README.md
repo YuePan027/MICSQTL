@@ -14,7 +14,8 @@ transcripts based on the input of bulk expression data and the estimated
 cellular composition per molecule type, without the need for single cell
 sequencing. We use matched transcriptome-proteome from human brain
 frontal cortex tissue samples to demonstrate the input and output of our
-tool.
+tool. 
+This pipeline enables valuable insights into cellular composition, facilitates cell-type-specific protein QTL mapping, and streamlines multi-modal data integration and dimension reduction.
 
 ![MICSQTL workflow.](./vignettes/fig1.PNG)
 

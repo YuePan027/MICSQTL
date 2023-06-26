@@ -3,8 +3,7 @@
 \name{TCA_deconv}
 \alias{TCA_deconv}
 \title{Estimation of cellular expression in high-throughput data
-from heterogeneous
- tissues}
+from heterogeneous tissues}
 \usage{
 TCA_deconv(se, test = "array", prop)
 }

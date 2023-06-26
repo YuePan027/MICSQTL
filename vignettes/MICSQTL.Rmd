@@ -16,7 +16,6 @@ abstract: >
   MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by borrowing information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci (QTL) mapping at cellular resolution. This is a novel pipeline for multi-omic integrative data analysis that fulfills the need for comprehensive analysis of diverse data sources. This pipeline enables valuable insights into cellular composition, facilitates cell-type-specific protein QTL mapping, and streamlines multi-modal data integration and dimension reduction.
 ---
 
-
 ```{r set, echo = FALSE}
 knitr::opts_chunk$set(
     collapse = TRUE,
@@ -26,14 +25,18 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to estimate cellular composition in the matched bulk proteomes. The expression of genes and proteins at either bulk level or cell type level can be integrated by Angle-based Joint and Individual Variation Explained (AJIVE) framework. Meanwhile, `MICSQTL` can perform cell-type-specic quantitative trait loci (QTL) mapping to proteins or transcripts based on the input of bulk expression data and the estimated cellular composition per molecule type, without the need for single cell sequencing.  We use matched transcriptome-proteome from human brain frontal cortex tissue samples to demonstrate the input and output of our tool. 
+Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to estimate cellular composition in the matched bulk proteomes. The expression of genes and proteins at either bulk level or cell type level can be integrated by Angle-based Joint and Individual Variation Explained (AJIVE) framework. Meanwhile, `MICSQTL` can perform cell-type-specic quantitative trait loci (QTL) mapping to proteins or transcripts based on the input of bulk expression data and the estimated cellular composition per molecule type, without the need for single cell sequencing. We use matched transcriptome-proteome from human brain frontal cortex tissue samples to demonstrate the input and output of our tool.
 
 ![MICSQTL workflow.](fig1.PNG)
 
+<<<<<<< HEAD
 
 # Install 
 
 ## Install MICSQTL
+=======
+## Install
+>>>>>>> 9e2b6e9f33af061c3abdcaf5965ea2eff839ffd8
 
 ```{r setup, message  = FALSE, warning  = FALSE}
 # Install
@@ -55,43 +58,27 @@ library(ggplot2)
 
 # Quick start
 
-A `SummarizedExperiment` object with bulk protein and/or gene expression
-contained in `counts` slot, and a “signature matrix” which serves as a
-reference of known cell type markers contained as an element in
-`metadata` slot is required as input file. We recommend including 
-important marker proteins or genes in the signature matrix to obtain more 
-reliable results.
+A `SummarizedExperiment` object with bulk protein and/or gene expression contained in `counts` slot, and a "signature matrix" which serves as a reference of known cell type markers contained as an element in `metadata` slot is required as input file. We recommend including important marker proteins or genes in the signature matrix to obtain more reliable results.
 
-In this package, we provide an example `SummarizedExperiment` object containing 
-the following elements:
+In this package, we provide an example `SummarizedExperiment` object containing the following elements:
 
-- protein_data: A subset of proteomic data PsychENCODE with 2242 rows 
- (protein) and 127 columns (sample).
+-   protein_data: A subset of proteomic data PsychENCODE with 2242 rows (protein) and 127 columns (sample).
 
-- anno_protein: A data frame with 2242 rows and 4 columns 
-(Chr, Start, End, Symbol) as annotations of each protein from `protein_data`.
- 
-- ref_protein: A signature matrix with 2242 rows (protein) and  4 columns 
-(cell types), which serves as a reference of known  cellular signatures.
+-   anno_protein: A data frame with 2242 rows and 4 columns (Chr, Start, End, Symbol) as annotations of each protein from `protein_data`.
 
-- gene_data: A data frame with 2867 rows (genes) and 127 columns (sample).
-   
-- ref_gene: A signature matrix with 4872 rows (genes) and 5 columns 
-(cell types), which serves as a reference of known cellular signatures.
+-   ref_protein: A signature matrix with 2242 rows (protein) and 4 columns (cell types), which serves as a reference of known cellular signatures.
 
-- prop_gene: A pre-defined deconvoluted transcriptome proportion matrix.
-   
-- SNP_data: A sparse matrix with 2000 rows (SNP), which stores the information 
-of genetic variants at each location from one chromosome and 127 columns 
-(sample, should match the sample in `protein_data`). Each matrix entry 
-corresponds to the genotype group indicator (0, 1 or 2) for a sample at a 
-genetic location.
-   
-- anno_SNP: A data frame with 2000 rows and 3 columns (CHROM, POS, ID), 
-which stores Annotations of each SNP from `SNP_data`.
-   
-- meta:A data frame with 127 rows (sample) and 2 columns 
-(disease status and gender) as metadata.
+-   gene_data: A data frame with 2867 rows (genes) and 127 columns (sample).
+
+-   ref_gene: A signature matrix with 4872 rows (genes) and 5 columns (cell types), which serves as a reference of known cellular signatures.
+
+-   prop_gene: A pre-defined deconvoluted transcriptome proportion matrix.
+
+-   SNP_data: A sparse matrix with 2000 rows (SNP), which stores the information of genetic variants at each location from one chromosome and 127 columns (sample, should match the sample in `protein_data`). Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
+
+-   anno_SNP: A data frame with 2000 rows and 3 columns (CHROM, POS, ID), which stores Annotations of each SNP from `SNP_data`.
+
+-   meta:A data frame with 127 rows (sample) and 2 columns (disease status and gender) as metadata.
 
 ```{r obj}
 data(se)
@@ -105,12 +92,11 @@ In this current version, only `nnls` is supported as single-source deconvolution
 
 Alternatively, if there are cell-type proportion estimates results generated using other methods or obtained from other sources, just save that as an element (`prop`) in `metadata` slot and this deconvolution step can be skipped. Note that the samples in the cell-type proportion estimates must match the samples from bulk protein expression data.
 
-
 ## Cross-source cell-type proportion deconvolution (optional)
 
-The reference matrix for pure cell proteomics may be incomplete due to the limitations of single-cell proteomics technologies. To address this, we propose a cross-source cell-type fraction deconvolution method that leverages matched bulk transcriptome-proteome data. In the following example, we demonstrate how to estimate protein proportions by utilizing information from deconvoluted transcriptomes. 
+The reference matrix for pure cell proteomics may be incomplete due to the limitations of single-cell proteomics technologies. To address this, we propose a cross-source cell-type fraction deconvolution method that leverages matched bulk transcriptome-proteome data. In the following example, we demonstrate how to estimate protein proportions by utilizing information from deconvoluted transcriptomes.
 
-Please note that the process described assumes that pre-defined deconvoluted transcriptome proportions are available, which are stored as prop_gene in the metadata slot. In the provided example, the estimated proportions were obtained using [CIBERSORT](https://cibersort.stanford.edu/). However, users have the flexibility to try other methods such as MuSiC, among others. 
+Please note that the process described assumes that pre-defined deconvoluted transcriptome proportions are available, which are stored as prop_gene in the metadata slot. In the provided example, the estimated proportions were obtained using [CIBERSORT](https://cibersort.stanford.edu/). However, users have the flexibility to try other methods such as MuSiC, among others.
 
 ```{r cross, message  = FALSE, warning  = FALSE, results=FALSE}
 se <- deconv(se, source = "cross")
@@ -143,9 +129,9 @@ Please note that for a more accurate and stable result, you can iteratively upda
 
 ## Integrative analysis
 
-AJIVE (Angle based Joint and Individual Variation Explained) is useful when there are multiple data matrices measured on the same set of samples. It decomposes each data matrix as three parts: (1) Joint variation across data types (2) Individual structured variation for each data type and (3) Residual noise. 
+AJIVE (Angle based Joint and Individual Variation Explained) is useful when there are multiple data matrices measured on the same set of samples. It decomposes each data matrix as three parts: (1) Joint variation across data types (2) Individual structured variation for each data type and (3) Residual noise.
 
-It is similar as principal component analysis (PCA), but principal component analysis only takes a single data set and decomposes it into modes of variation that maximize variation. AJIVE finds joint modes of variation from multiple data sources. 
+It is similar as principal component analysis (PCA), but principal component analysis only takes a single data set and decomposes it into modes of variation that maximize variation. AJIVE finds joint modes of variation from multiple data sources.
 
 Common normalized scores are one of the desirable output to explore the joint behavior that is shared by different data sources. Below we show the visualization of common normalized scores. It is clear that the disease status of these samples are well separated by the first common normalized scores.
 
@@ -180,22 +166,17 @@ ggpairs(pca_res_gene,
 ) + theme_classic()
 ```
 
-
-
-
-
-
 ## Feature filtering
 
 The feature filtering can be applied at both proteins/genes and SNPs. This step is optional but highly recommended to filter out some features that are not very informative or do not make much sense biologically. Note that this function is required to run even no filtering is expected to be done (just set `filter_method = "null"`) to obtain a consistent object format for downstream analysis.
 
-To apply feature filtering, annotation files for protein/gene and SNPs are required. The annotation file for proteins/genes should be stored in `rowData()`, where each row corresponds to a protein/gene with it’s symbol as row names. The first column should be a character vector indicating which chromosome each protein or gene is on. In addition, it should contain at least a “Start” column with numeric values indicating the start position on that chromosome, a “End” column with numeric values indicating the end position on that chromosome and a “Symbol” column as a unique name for each protein or gene.
+To apply feature filtering, annotation files for protein/gene and SNPs are required. The annotation file for proteins/genes should be stored in `rowData()`, where each row corresponds to a protein/gene with it's symbol as row names. The first column should be a character vector indicating which chromosome each protein or gene is on. In addition, it should contain at least a "Start" column with numeric values indicating the start position on that chromosome, a "End" column with numeric values indicating the end position on that chromosome and a "Symbol" column as a unique name for each protein or gene.
 
 ```{r filter1}
 head(rowData(se))
 ```
 
-The information from genetic variants should be stored in a P (the number of SNP) by N (the number of samples, should match the sample in `counts` slot) matrix contained as an element (`SNP_data`) in `metadata` slot. Each matrix entry corresponds to the genotype group indicator (0 for 0/0, 1 for 0/1 and 2 for 1/1) for a sample at a genetic location. The annotations of these SNP should be stored as an element (`anno_SNP`) in `metadata` slot. It should include at least the following columns: (1) “CHROM” (which chromosome the SNP is on); (2) “POS” (position of that SNP) and (3) “ID” (a unique identifier for each SNP, usually a combination of chromosome and its position).
+The information from genetic variants should be stored in a P (the number of SNP) by N (the number of samples, should match the sample in `counts` slot) matrix contained as an element (`SNP_data`) in `metadata` slot. Each matrix entry corresponds to the genotype group indicator (0 for 0/0, 1 for 0/1 and 2 for 1/1) for a sample at a genetic location. The annotations of these SNP should be stored as an element (`anno_SNP`) in `metadata` slot. It should include at least the following columns: (1) "CHROM" (which chromosome the SNP is on); (2) "POS" (position of that SNP) and (3) "ID" (a unique identifier for each SNP, usually a combination of chromosome and its position).
 
 The example SNP data provided here were restricted to chromosome 9 only. In practice, the SNPs may from multiple or even all chromosomes.
 
@@ -207,12 +188,9 @@ For filtering at protein or gene level, only those symbols contained in `target_
 
 For filtering at SNP level, there are three options: (1) filter out the SNPs that have minor allele frequency below the threshold defined by `filter_allele` argument (`filter_method = "allele"`); (2) filter out the SNPs that the fraction of samples in the smallest genotype group below the threshold defined by `filter_geno` argument (`filter_method = "allele"`) and (3) restrict to cis-regulatory variants (`filter_method = "distance"`): the SNPs up to 1 Mb proximal to the start of the gene. Both filtering methods can be applied simultaneously by setting `filter_method = c("allele", "distance")`.
 
-The results after filtering will be stored as an element (`choose_SNP_list`) in `metadata` slot. It is a list with the length of the number of proteins for downstream analysis. Each element stores the index of SNPs to be tested for corresponding protein. The proteins with
-no SNPs correspond to it will be removed from the returned list.
+The results after filtering will be stored as an element (`choose_SNP_list`) in `metadata` slot. It is a list with the length of the number of proteins for downstream analysis. Each element stores the index of SNPs to be tested for corresponding protein. The proteins with no SNPs correspond to it will be removed from the returned list.
 
-To simplify the analysis, we only test 3 targeted proteins from
-chromosome 9 as an example.
-
+To simplify the analysis, we only test 3 targeted proteins from chromosome 9 as an example.
 
 ```{r filter3}
 target_protein <- rowData(se)[rowData(se)$Chr == 9, ][seq_len(3), "Symbol"]
@@ -231,13 +209,11 @@ In this example, the number of SNPs corresponding to each protein after filterin
 unlist(lapply(slot(se, "metadata")$choose_SNP_list, length))
 ```
 
-
 ## csQTL analysis
 
-In this step, the `TOAST` method is implemented for cell-type-specific differential expression analysis based on samples’ genotype.
+In this step, the `TOAST` method is implemented for cell-type-specific differential expression analysis based on samples' genotype.
 
-The result will be stored as an element (`TOAST_output`) in `metadata` slot. It is a list with the same length as tested proteins or genes where each element consists of a table including protein or gene symbol, SNP ID and p-values from each cell type. A significant p-value indicates that the protein or gene expression is different among the sample from
-different genotype groups.
+The result will be stored as an element (`TOAST_output`) in `metadata` slot. It is a list with the same length as tested proteins or genes where each element consists of a table including protein or gene symbol, SNP ID and p-values from each cell type. A significant p-value indicates that the protein or gene expression is different among the sample from different genotype groups.
 
 ```{r csQTL1}
 system.time(se <- csQTL(se))
@@ -250,19 +226,9 @@ res <- slot(se, "metadata")$TOAST_output[[2]]
 head(res[order(apply(res, 1, min)), ])
 ```
 
+## TCA tensor deconvolution
 
-
-## TCA tensor deconvolution 
-
-The cell-type-specific expression per bulk sample can be predicted
-using `TCA` deconvolution method given cellular composition (stored as
-`prop` in `metadata`). The output will be stored as an element
-(`TCA_deconv`) in `metadata` slot. It is a list with the length of the
-number of cell types (same as cell types in `prop` in `metadata` slot).
-Each element stores a deconvoluted protein expression per bulk sample.
-Below is an example to check the deconvoluted cellular expression for
-the first cell type (restricted to first 5 proteins and first 5
-samples):
+The cell-type-specific expression per bulk sample can be predicted using `TCA` deconvolution method given cellular composition (stored as `prop` in `metadata`). The output will be stored as an element (`TCA_deconv`) in `metadata` slot. It is a list with the length of the number of cell types (same as cell types in `prop` in `metadata` slot). Each element stores a deconvoluted protein expression per bulk sample. Below is an example to check the deconvoluted cellular expression for the first cell type (restricted to first 5 proteins and first 5 samples):
 
 ```{r tca, message=FALSE}
 se <- TCA_deconv(se, prop = slot(se, "metadata")$prop)
@@ -328,23 +294,16 @@ ggplot(
     ylab("Deconvoluted expression")
 ```
 
-
-
-
 # Licenses of the analysis methods
 
-| method                                                                 | citation                                                                                                                                                                                                 |
-|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [TCA](https://cran.r-project.org/web/packages/TCA/index.html)          | Rahmani, Elior, et al. “Cell-type-specific resolution epigenetics without the need for cell sorting or single-cell biology.” Nature communications 10.1 (2019): 3417.                                    |
-| [AJIVE](https://github.com/idc9/r_jive)                                | Feng, Qing, et al. “Angle-based joint and individual variation explained.” Journal of multivariate analysis 166 (2018): 241-265.                                                                         |
-| [TOAST](http://bioconductor.org/packages/release/bioc/html/TOAST.html) | Li, Ziyi, and Hao Wu. “TOAST: improving reference-free cell composition estimation by cross-cell type differential analysis.” Genome biology 20.1 (2019): 1-17. 
-
+| method                                                                 | citation                                                                                                                                                              |
+|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [TCA](https://cran.r-project.org/web/packages/TCA/index.html)          | Rahmani, Elior, et al. "Cell-type-specific resolution epigenetics without the need for cell sorting or single-cell biology." Nature communications 10.1 (2019): 3417. |
+| [AJIVE](https://github.com/idc9/r_jive)                                | Feng, Qing, et al. "Angle-based joint and individual variation explained." Journal of multivariate analysis 166 (2018): 241-265.                                      |
+| [TOAST](http://bioconductor.org/packages/release/bioc/html/TOAST.html) | Li, Ziyi, and Hao Wu. "TOAST: improving reference-free cell composition estimation by cross-cell type differential analysis." Genome biology 20.1 (2019): 1-17.       |
 
 # Session info {.unnumbered}
 
 ```{r sessionInfo, echo=FALSE}
 sessionInfo()
 ```
-
-
-

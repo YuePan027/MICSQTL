@@ -29,14 +29,13 @@ Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to
 
 ![MICSQTL workflow.](fig1.PNG)
 
-<<<<<<< HEAD
 
 # Install 
 
 ## Install MICSQTL
-=======
+
 ## Install
->>>>>>> 9e2b6e9f33af061c3abdcaf5965ea2eff839ffd8
+
 
 ```{r setup, message  = FALSE, warning  = FALSE}
 # Install

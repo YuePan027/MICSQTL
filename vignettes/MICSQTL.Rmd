@@ -30,29 +30,22 @@ Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to
 ![MICSQTL workflow.](fig1.PNG)
 
 
-# Install 
+# Install MICSQTL
 
-## Install MICSQTL
-
-## Install
-
-
-```{r setup, message  = FALSE, warning  = FALSE}
-# Install
+```{r setup, message  = FALSE, warning  = FALSE, eval=FALSE}
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("MICSQTL")
-library(MICSQTL)
 ```
 
-## Othter packages
+# Load packages
 
 ```{r lib, message  = FALSE, warning  = FALSE}
+library(MICSQTL)
 library(reshape2)
 library(RColorBrewer)
 library(GGally)
 library(ggplot2)
-
 ```
 
 # Quick start

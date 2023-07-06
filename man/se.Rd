@@ -5,7 +5,7 @@
 \alias{se}
 \title{Example data}
 \format{
-A `SummarizedExperiment `object with following example data:
+A `SummarizedExperiment`object with following example data:
 \describe{
   \item{protein_data}{A subset of proteomic data PsychENCODE with 2242 rows
 (protein) and 127 columns (sample).}
@@ -34,7 +34,7 @@ which stores Annotations of each SNP from `SNP_data`}
 }
 }
 \description{
-The example input files are organized as a `SummarizedExperiment `object.
+The example input files are organized as a `SummarizedExperiment`object.
 }
 \examples{
 data(se)

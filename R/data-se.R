@@ -1,10 +1,10 @@
 #' Example data
 #'
-#' The example input files are organized as a `SummarizedExperiment `object.
+#' The example input files are organized as a `SummarizedExperiment`object.
 #'
 #' @name se
 #' @docType data
-#' @format  A `SummarizedExperiment `object with following example data:
+#' @format  A `SummarizedExperiment`object with following example data:
 #' \describe{
 #'   \item{protein_data}{A subset of proteomic data PsychENCODE with 2242 rows
 #' (protein) and 127 columns (sample).}

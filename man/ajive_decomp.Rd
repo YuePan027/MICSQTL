@@ -9,7 +9,13 @@ ajive_decomp(
   ini_rank = c(20, 20),
   test = "gene_data",
   use_marker = FALSE,
-  level = "bulk"
+  level = "bulk",
+  plot = FALSE,
+  score = "cns_1",
+  group_var = "disease",
+  scatter = FALSE,
+  scatter_x,
+  scatter_y
 )
 }
 \arguments{
@@ -34,12 +40,33 @@ data block measured on the same set of samples.}
 be done at cell type specific level and
 which cell type should be used. By default, the integrative analysis is done
 at bulk level.}
+
+\item{plot}{If TRUE, visualization on common normalized scores across 
+different data sources will be stored as an element (`cns_plot`) in `metadata` 
+slot.}
+
+\item{score}{A character of variable name indicating which common
+normalized score is used for boxplot and ridge plot (valid if plot = TRUE).}
+
+\item{group_var}{A character of variable name indicating which variable is
+used as the group variable to compare common normalized scores 
+(valid if plot = TRUE).}
+
+\item{scatter}{A logical value indicating whether to make scatter plot or
+not. Only valid when the joint rank is at least two (valid if plot = TRUE).}
+
+\item{scatter_x}{A character of variable name indicating which common
+normalized scores on horizontal axis (valid if plot = TRUE).}
+
+\item{scatter_y}{A character of variable name indicating which common
+normalized scores on vertical axis (valid if plot = TRUE).}
 }
 \value{
 A `SummarizedExperiment`. The results from AJIVE will be stored as
 an element (`ajive_res`) in `metadata` slot.
 The generated common normalized scores will be stored as an element (`cns`)
-in `metadata` slot.
+in `metadata` slot. The visualization of the common normalized scores will 
+be stored as an element (`cns_plot`) in `metadata` slot.
 }
 \description{
 This function returns a `SummarizedExperiment` object including results from
@@ -60,6 +87,7 @@ joint behavior that is shared by different data sources.
 }
 \examples{
 data(se)
+metadata(se)$gene_data <- metadata(se)$gene_data[seq_len(100),] #reduce time
 se <- ajive_decomp(se, use_marker = TRUE)
 
 }

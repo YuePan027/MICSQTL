@@ -2,7 +2,6 @@
 
 export(TCA_deconv)
 export(ajive_decomp)
-export(cns_plot)
 export(csQTL)
 export(deconv)
 export(feature_filter)

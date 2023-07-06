@@ -34,24 +34,46 @@
 #' be done at cell type specific level and
 #' which cell type should be used. By default, the integrative analysis is done
 #' at bulk level.
+#' @param plot If TRUE, visualization on common normalized scores across 
+#' different data sources will be stored as an element (`cns_plot`) in `metadata` 
+#' slot.
+#' @param score A character of variable name indicating which common
+#' normalized score is used for boxplot and ridge plot (valid if plot = TRUE).
+#' @param group_var A character of variable name indicating which variable is
+#' used as the group variable to compare common normalized scores 
+#' (valid if plot = TRUE).
+#' @param scatter A logical value indicating whether to make scatter plot or
+#' not. Only valid when the joint rank is at least two (valid if plot = TRUE).
+#' @param scatter_x A character of variable name indicating which common
+#' normalized scores on horizontal axis (valid if plot = TRUE).
+#' @param scatter_y A character of variable name indicating which common
+#' normalized scores on vertical axis (valid if plot = TRUE).
 #'
 #' @return A `SummarizedExperiment`. The results from AJIVE will be stored as
 #' an element (`ajive_res`) in `metadata` slot.
 #' The generated common normalized scores will be stored as an element (`cns`)
-#' in `metadata` slot.
+#' in `metadata` slot. The visualization of the common normalized scores will 
+#' be stored as an element (`cns_plot`) in `metadata` slot.
 #'
 #' @import SummarizedExperiment
 #' @importFrom S4Vectors metadata
+#' @import ggplot2
+#' @import ggridges
+#' @importFrom ggpubr ggarrange
 #'
 #' @export
 #'
 #' @examples
 #' data(se)
+#' metadata(se)$gene_data <- metadata(se)$gene_data[seq_len(100),] #reduce time
 #' se <- ajive_decomp(se, use_marker = TRUE)
 #'
 ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
                          use_marker = FALSE,
-                         level = "bulk") {
+                         level = "bulk",
+                         plot = FALSE,
+                         score = "cns_1", group_var = "disease",
+                         scatter = FALSE, scatter_x, scatter_y) {
     if (level == "bulk") {
         dat1 <- assay(se)
         if (use_marker) {
@@ -82,121 +104,77 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
     metadata(se)$cns <- cns
     joint_rank <- ajive_res$joint_rank
     metadata(se)$joint_rank <- joint_rank
-    return(se)
-}
-
-
-#' Common normalized score visualization
-#'
-#' This function is used to visualize the distribution of common normalized
-#' scores across different data sources.
-#'
-#'
-#' @param se A `SummarizedExperiment` object with common normalized scores s
-#' tored as an element (`cns`) in `metadata` slot.
-#' In addition, a metadata with phenotype interested and measures on the
-#' matched samples (as in assay) is required.
-#' @param score A character of variable name indicating which common
-#' normalized score is used for boxplot and ridge plot.
-#' @param group_var A character of variable name indicating which variable is
-#' used as the group variable to
-#' compare common normalized scores.
-#' @param scatter A logical value indicating whether to make scatter plot or
-#' not. Only valid when the joint rank is at least two.
-#' @param scatter_x A character of variable name indicating which common
-#' normalized scores on horizontal axis.
-#' @param scatter_y A character of variable name indicating which common
-#' normalized scores on vertical axis.
-#'
-#' @return A `SummarizedExperiment`. The results from AJIVE will be stored
-#' as an element (`ajive_res`) in `metadata` slot.
-#' The generated common normalized scores will be stored as an element (`cns`)
-#' in `metadata` slot.
-#'
-#' @import SummarizedExperiment
-#' @import ggplot2
-#' @import ggridges
-#' @importFrom ggpubr ggarrange
-#' @importFrom S4Vectors metadata
-#'
-#' @export
-#'
-#' @examples
-#' data(se)
-#' se <- ajive_decomp(se, use_marker = TRUE)
-#' cns_plot(se,
-#'     score = "cns_1", group_var = "disease", scatter = TRUE,
-#'     scatter_x = "cns_1", scatter_y = "cns_2"
-#' )
-#'
-cns_plot <- function(se, score = "cns_1", group_var = "disease",
-                     scatter = FALSE, scatter_x, scatter_y) {
-    cns <- metadata(se)$cns
-    colnames(cns) <- paste("cns", seq_len(ncol(cns)), sep = "_")
-    df <- data.frame(cns, metadata(se)$meta)
-
-    p1 <- ggplot(
-        df,
-        aes(
-            x = .data[[group_var]], y = .data[[score]],
-            fill = .data[[group_var]]
-        )
-    ) +
-        geom_point(
-            position = position_jitterdodge(
-                jitter.width = 0.1,
-                dodge.width = 0.7
-            ),
-            aes(fill = .data[[group_var]], color = .data[[group_var]]),
-            pch = 21, alpha = 0.5
-        ) +
-        geom_boxplot(lwd = 0.7, outlier.shape = NA) +
-        theme_classic() +
-        ylab(score)
-
-    p2 <- ggplot(
-        df,
-        aes(
-            x = .data[[score]], y = .data[[group_var]],
-            fill = .data[[group_var]]
-        )
-    ) +
-        geom_density_ridges(
-            aes(
-                point_color = .data[[group_var]],
-                point_fill = .data[[group_var]],
-                point_shape = .data[[group_var]]
-            ),
-            alpha = .2, point_alpha = 1, jittered_points = TRUE
-        ) +
-        scale_point_color_hue(l = 40) +
-        theme_classic() +
-        xlab(score)
-
-    if (ncol(cns) < 2 & scatter) {
-        message("The scatter plot is not supported since joint rank
-                is smaller than 2")
-    }
-
-    if (ncol(cns) < 2 | !scatter) {
-        return(ggarrange(p1, p2,
-            ncol = 2, nrow = 1,
-            common.legend = TRUE
-        ))
-    } else if (scatter) {
-        p3 <- ggplot(
+    
+    if(plot){
+        cns <- metadata(se)$cns
+        colnames(cns) <- paste("cns", seq_len(ncol(cns)), sep = "_")
+        df <- data.frame(cns, metadata(se)$meta)
+        
+        p1 <- ggplot(
             df,
             aes(
-                x = .data[[scatter_x]], y = .data[[scatter_y]],
-                color = .data[[group_var]]
+                x = .data[[group_var]], y = .data[[score]],
+                fill = .data[[group_var]]
             )
         ) +
-            geom_point() +
+            geom_point(
+                position = position_jitterdodge(
+                    jitter.width = 0.1,
+                    dodge.width = 0.7
+                ),
+                aes(fill = .data[[group_var]], color = .data[[group_var]]),
+                pch = 21, alpha = 0.5
+            ) +
+            geom_boxplot(lwd = 0.7, outlier.shape = NA) +
+            theme_classic() +
+            ylab(score)
+        
+        p2 <- ggplot(
+            df,
+            aes(
+                x = .data[[score]], y = .data[[group_var]],
+                fill = .data[[group_var]]
+            )
+        ) +
+            geom_density_ridges(
+                aes(
+                    point_color = .data[[group_var]],
+                    point_fill = .data[[group_var]],
+                    point_shape = .data[[group_var]]
+                ),
+                alpha = .2, point_alpha = 1, jittered_points = TRUE
+            ) +
             scale_point_color_hue(l = 40) +
-            theme_classic()
-        return(ggarrange(p1, p2, p3,
-            ncol = 2, nrow = 2,
-            common.legend = TRUE
-        ))
+            theme_classic() +
+            xlab(score)
+        
+        if (ncol(cns) < 2 & scatter) {
+            message("The scatter plot is not supported since joint rank
+                is smaller than 2")
+        }
+        
+        if (ncol(cns) < 2 | !scatter) {
+            plot <- ggarrange(p1, p2,
+                             ncol = 2, nrow = 1,
+                             common.legend = TRUE
+            )
+        } else if (scatter) {
+            p3 <- ggplot(
+                df,
+                aes(
+                    x = .data[[scatter_x]], y = .data[[scatter_y]],
+                    color = .data[[group_var]]
+                )
+            ) +
+                geom_point() +
+                scale_point_color_hue(l = 40) +
+                theme_classic()
+            plot <- ggarrange(p1, p2, p3,
+                             ncol = 2, nrow = 2,
+                             common.legend = TRUE
+            )
+        }
+        metadata(se)$cns_plot <- plot
     }
+    return(se)
 }

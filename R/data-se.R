@@ -32,6 +32,7 @@
 #'   \item{prop}{An example cellular composition by running `deconv` function.}
 #' }
 #' 
+#' @return A `SummarizedExperiment`object.
 #' @examples
 #' data(se)
 #' @keywords datasets

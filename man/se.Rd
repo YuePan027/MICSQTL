@@ -33,6 +33,9 @@ which stores Annotations of each SNP from `SNP_data`}
   \item{prop}{An example cellular composition by running `deconv` function.}
 }
 }
+\value{
+A `SummarizedExperiment`object.
+}
 \description{
 The example input files are organized as a `SummarizedExperiment`object.
 }

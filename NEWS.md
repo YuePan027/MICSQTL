@@ -1,3 +1,6 @@
+# MICSQTL 0.99.12
+- Update package loading in vignette.
+
 # MICSQTL 0.99.11
 - Add @return to data documentation.
 

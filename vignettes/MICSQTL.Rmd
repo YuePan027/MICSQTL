@@ -32,7 +32,7 @@ Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk transcriptomes to
 
 # Install MICSQTL
 
-```{r setup, message  = FALSE, warning  = FALSE, eval=FALSE}
+```{r setup, message = FALSE, warning = FALSE, eval = FALSE}
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("MICSQTL")
@@ -40,8 +40,13 @@ BiocManager::install("MICSQTL")
 
 # Load packages
 
-```{r lib, message  = FALSE, warning  = FALSE}
+```{r lib, message = FALSE, warning = FALSE}
 library(MICSQTL)
+```
+
+Load packages for making plots.
+
+```{r lib2, message = FALSE, warning = FALSE, eval = FALSE}
 library(reshape2)
 library(RColorBrewer)
 library(GGally)
@@ -90,11 +95,11 @@ The reference matrix for pure cell proteomics may be incomplete due to the limit
 
 Please note that the process described assumes that pre-defined deconvoluted transcriptome proportions are available, which are stored as prop_gene in the metadata slot. In the provided example, the estimated proportions were obtained using [CIBERSORT](https://cibersort.stanford.edu/). However, users have the flexibility to try other methods such as MuSiC, among others.
 
-```{r cross, message  = FALSE, warning  = FALSE, results=FALSE}
+```{r cross, message = FALSE, warning = FALSE, results = FALSE}
 se <- deconv(se, source = "cross")
 ```
 
-```{r plot2, echo  = FALSE, warning  = FALSE}
+```{r plot2, echo = FALSE, warning = FALSE, eval = FALSE}
 mycolors <- brewer.pal(5, "Set2")[c(2,1,5,3,4)]
 ggplot(
     cbind(data.frame(melt(metadata(se)$prop), metadata(se)$meta)),
@@ -117,6 +122,8 @@ ggplot(
     theme(legend.position = "none")
 ```
 
+![Boxplots of estimated cell proportions using cross-source.](plot2-1.png)
+
 Please note that for a more accurate and stable result, you can iteratively update the proportion by setting `iter = TRUE`. This allows the estimation to be refined through multiple iterations until convergence.
 
 ## Integrative analysis
@@ -127,11 +134,13 @@ It is similar as principal component analysis (PCA), but principal component ana
 
 Common normalized scores are one of the desirable output to explore the joint behavior that is shared by different data sources. Below we show the visualization of common normalized scores. It is clear that the disease status of these samples are well separated by the first common normalized scores.
 
-```{r ajive}
+```{r ajive, eval = FALSE}
 se <- ajive_decomp(se, use_marker = TRUE, 
                    score = "cns_1", group_var = "disease", scatter = TRUE,
                    scatter_x = "cns_1", scatter_y = "cns_2")
 ```
+
+![Sample group separation based on common normalized scores from AJIVE.](ajive-1.png)
 
 ### Comparison to PCA
 
@@ -140,6 +149,9 @@ pca_res <- prcomp(t(assay(se)), rank. = 3, scale. = FALSE)
 pca_res_protein <- data.frame(pca_res[["x"]])
 pca_res_protein <- cbind(pca_res_protein, metadata(se)$meta$disease)
 colnames(pca_res_protein)[4] <- "disease"
+```
+
+```{r pcaplot, eval = FALSE}
 ggpairs(pca_res_protein,
     columns = seq_len(3), aes(color = disease, alpha = 0.5),
     upper = list(continuous = "points")
@@ -155,6 +167,10 @@ ggpairs(pca_res_gene,
     upper = list(continuous = "points")
 ) + theme_classic()
 ```
+
+![Top3 principal components of proteome.](pca-1.png)
+
+![Top3 principal components of proteome and transcriptome.](pca-2.png)
 
 ## Feature filtering
 
@@ -239,7 +255,7 @@ idx <- which(metadata(se)$anno_SNP$ID == "9:137179658")
 table(metadata(se)$SNP_data[idx, ])
 ```
 
-```{r plot3, echo  = FALSE}
+```{r plot3, eval  = FALSE}
 ggplot(
     data.frame(melt(data.frame(cbind(df_res, genotype = metadata(se)$SNP_data[idx, ])), id.vars = c("genotype"))),
     aes(x = factor(genotype), y = value, fill = variable)
@@ -261,6 +277,8 @@ ggplot(
     theme(legend.position = "none")
 ```
 
+![Boxplots of cell-type-specific expression in one example protein.](plot3-1.png)
+
 Such patterns may not be profound at bulk level.
 
 ```{r bulk}
@@ -272,7 +290,7 @@ df_test <- data.frame(
 )
 ```
 
-```{r plot4, echo = FALSE}
+```{r plot4, eval = FALSE}
 ggplot(
     df_test,
     aes(x = factor(genotype), y = value)
@@ -283,6 +301,8 @@ ggplot(
     xlab("Genotype") +
     ylab("Deconvoluted expression")
 ```
+
+![Boxplots of bulk expression in one example protein.](plot4-1.png)
 
 # Licenses of the analysis methods
 

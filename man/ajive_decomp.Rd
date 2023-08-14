@@ -15,7 +15,8 @@ ajive_decomp(
   group_var = "disease",
   scatter = FALSE,
   scatter_x,
-  scatter_y
+  scatter_y,
+  loading_out = FALSE
 )
 }
 \arguments{
@@ -60,6 +61,10 @@ normalized scores on horizontal axis (valid if plot = TRUE).}
 
 \item{scatter_y}{A character of variable name indicating which common
 normalized scores on vertical axis (valid if plot = TRUE).}
+
+\item{loading_out}{A logical value indicating whether to output the
+corresponding joint loadings for each data source. See manuscript at 
+https://arxiv.org/pdf/1704.02060.pdf for more details.}
 }
 \value{
 A `SummarizedExperiment`. The results from AJIVE will be stored as

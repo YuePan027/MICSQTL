@@ -48,6 +48,9 @@
 #' normalized scores on horizontal axis (valid if plot = TRUE).
 #' @param scatter_y A character of variable name indicating which common
 #' normalized scores on vertical axis (valid if plot = TRUE).
+#' @param loading_out A logical value indicating whether to output the
+#'  corresponding joint loadings for each data source. See manuscript at 
+#'  https://arxiv.org/pdf/1704.02060.pdf for more details.
 #'
 #' @return A `SummarizedExperiment`. The results from AJIVE will be stored as
 #' an element (`ajive_res`) in `metadata` slot.
@@ -73,7 +76,8 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
                          level = "bulk",
                          plot = FALSE,
                          score = "cns_1", group_var = "disease",
-                         scatter = FALSE, scatter_x, scatter_y) {
+                         scatter = FALSE, scatter_x, scatter_y,
+                         loading_out = FALSE) {
     if (level == "bulk") {
         dat1 <- assay(se)
         if (use_marker) {
@@ -175,6 +179,11 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
             )
         }
         metadata(se)$cns_plot <- plot
+    }
+    
+    if(loading_out){
+        metadata(se)$loadings <- list(get_block_loadings(ajive_res, 1, "joint"),
+                            get_block_loadings(ajive_res, 2, "joint"))
     }
     return(se)
 }

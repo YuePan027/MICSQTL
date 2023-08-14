@@ -140,12 +140,9 @@ disease status of these samples are well separated by the first common
 normalized scores.
 
 ``` r
-se <- ajive_decomp(se, use_marker = TRUE)
-cns_plot(se,
-    score = "cns_1", group_var = "disease",
-    scatter = TRUE, scatter_x = "cns_1", scatter_y = "cns_2"
-)
-#> Picking joint bandwidth of 0.00881
+se <- ajive_decomp(se, use_marker = TRUE, 
+                   score = "cns_1", group_var = "disease", scatter = TRUE,
+                   scatter_x = "cns_1", scatter_y = "cns_2")
 ```
 
 ![](./vignettes/ajive-1.png)<!-- -->

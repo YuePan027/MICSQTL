@@ -1,3 +1,6 @@
+# MICSQTL 0.99.13
+- Update ajive_decomp by adding option to output loadings.
+
 # MICSQTL 0.99.12
 - Update package loading in vignette.
 

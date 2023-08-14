@@ -486,3 +486,11 @@ ajive <- function(blocks, initial_signal_ranks, full = TRUE,
     jive_decomposition[["joint_rank_sel"]] <- joint_rank_sel_results
     jive_decomposition
 }
+
+get_block_loadings <- function(ajive_output, k, type){
+    if(! type  %in% c('joint', 'individual')){
+        stop('type must be: joint or individual')
+    }
+    
+    ajive_output$block_decomps[[k]][[type]][['v']]
+}

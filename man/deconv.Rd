@@ -29,9 +29,11 @@ literature to ensure reliable results.}
 \item{source}{A character string denotes which molecular profiles to be
 deconvoluted. The setting of `proteins`
 or `transcript` means single-source
-deconvolution with source-specific signature matrix, while 'cross' means
+deconvolution with source-specific signature matrix, while `cross` means
 proteome deconvolution based on
-pre-estimated transcriptome proportion.}
+pre-estimated transcriptome proportion. If `cross`, an input of 
+pre-estimated transcriptome proportion `prop_gene` is required in 
+`metadata` slot.}
 
 \item{method}{A character string denotes which deconvolution method to use.
 In the current version, only `nnls` is supported for single source.}

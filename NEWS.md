@@ -1,3 +1,6 @@
+# MICSQTL 0.99.14
+- Update deconv by allowing proteins selected by loadings.
+
 # MICSQTL 0.99.13
 - Update ajive_decomp by adding option to output loadings.
 

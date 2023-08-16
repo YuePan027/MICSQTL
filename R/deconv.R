@@ -20,9 +20,11 @@
 #' @param source A character string denotes which molecular profiles to be
 #' deconvoluted. The setting of `proteins`
 #' or `transcript` means single-source
-#' deconvolution with source-specific signature matrix, while 'cross' means
+#' deconvolution with source-specific signature matrix, while `cross` means
 #' proteome deconvolution based on
-#' pre-estimated transcriptome proportion.
+#' pre-estimated transcriptome proportion. If `cross`, an input of 
+#' pre-estimated transcriptome proportion `prop_gene` is required in 
+#' `metadata` slot.
 #' @param method A character string denotes which deconvolution method to use.
 #' In the current version, only `nnls` is supported for single source.
 #' @param iter If TRUE, iterate estimated proportion until converged.
@@ -118,12 +120,11 @@ deconv <- function(se,
             metadata(se)$ref_gene[in_use, , drop = FALSE]
         result <- metadata(se)$prop_gene
         ini_prop <- result[, seq_len(ncol(ref_gene))]
-        mrk_prot <- intersect(rownames(assay(se)), in_use)
-        tca_res <- tca(
-            X = assay(se)[mrk_prot, , drop = FALSE],
+        tca_res <- TCA::tca(
+            X = assay(se),
             W = ini_prop,
             refit_W = TRUE,
-            refit_W.sparsity = length(mrk_prot)
+            refit_W.sparsity = nrow(assay(se))
         )
         prop <- tca_res$W
     }
@@ -132,12 +133,12 @@ deconv <- function(se,
         TCA_iter <- function(ini_prop, max_iter, diff_max){
           iter_idx <- 1
           while (iter_idx < max_iter){
-            tca_res <- TCA::tca(
-              X = assay(se)[mrk_prot, , drop = FALSE],
-              W = ini_prop,
-              refit_W = TRUE,
-              refit_W.sparsity = length(mrk_prot)
-            )
+              tca_res <- TCA::tca(
+                  X = assay(se),
+                  W = ini_prop,
+                  refit_W = TRUE,
+                  refit_W.sparsity = nrow(assay(se))
+              )
             diff <- abs(ini_prop - tca_res$W)
             if(max(diff) < diff_max){
               return(tca_res$W)

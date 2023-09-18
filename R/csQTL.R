@@ -44,7 +44,7 @@
 #'
 #' @examples
 #' data(se)
-#' se <- deconv(se, source = "protein", method = "nnls")
+#' se <- deconv(se, source = "protein", method = "nnls", use_refactor = NULL)
 #' target_protein <- c("ABCA1")
 #' se <- feature_filter(se,
 #'     target_protein = target_protein,

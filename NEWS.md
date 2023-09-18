@@ -1,3 +1,7 @@
+# MICSQTL 1.0.0
+- Update deconv and ajive by integrating a novel feature selection approach 
+and improved deconvolution method.
+
 # MICSQTL 0.99.14
 - Update deconv by allowing proteins selected by loadings.
 

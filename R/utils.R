@@ -494,3 +494,77 @@ get_block_loadings <- function(ajive_output, k, type){
     
     ajive_output$block_decomps[[k]][[type]][['v']]
 }
+
+grad_p <- function(X1, Y1, X2, Y2, p, s1, s2){
+    grad <- rowSums(t(as.vector(X1 %*% (p*s1) - Y1) * X1) * s1) +
+        rowSums(t(as.vector(X2 %*% (p*s2) - Y2) * X2) * s2)
+    return(grad)
+}
+
+grad_si <- function(X,Y,p,s){
+    grad <- rowSums(t(as.vector(X %*% (p*s) - Y) * X) * p)
+    return(grad)
+}
+
+grad_Xi <- function(X,Y,p,s){
+    grad <- (X %*% (p*s) - Y) %*% matrix(p*s, nrow = 1)
+    return(grad)
+}
+
+MICSQTL_optim <- function(Y1, Y2,
+                          ini_p, ini_s,
+                          X1, 
+                          X2,
+                          step_p,
+                          step_s,
+                          eps,
+                          iter){
+    p <- ini_p
+    s1 <- ini_s[[1]]
+    s2 <- ini_s[[2]]
+    eps_t <- 0.2
+    iter_t <- 1
+    res <- list()
+    while(eps_t > eps & iter_t < iter){
+        p_u <- pmax(p - step_p * grad_p(X1, Y1, X2, Y2, p, s1, s2), 0)
+        s1_u <- pmax(s1 - step_s * grad_si(X1, Y1, p, s1), 0)
+        s2_u <- pmax(s2 - step_s * grad_si(X2, Y2, p, s2), 0)  
+        X1_u <- X1 - 0.1 * grad_Xi(X1, Y1, p, s1)
+        X2_u <- X2 - 0.1 * grad_Xi(X2, Y2, p, s2)
+        
+        eps_t <- max(abs(p_u - p),
+                     abs(p*s1 - p_u*s1_u),
+                     abs(p*s2 - p_u*s2_u),
+                     max(abs(X1_u - X1)),
+                     max(abs(X2_u - X2)))
+        p <- p_u
+        s1 <- s1_u
+        s2 <- s2_u
+        max_diff_X1 <- max(abs(X1_u - X1))
+        max_diff_X2 <- max(abs(X2_u - X2))
+        X1 <- X1_u
+        X2 <- X2_u
+        iter_t <- iter_t + 1
+    }
+    res <- list(iter = iter_t,
+                L = sum(as.vector(X1 %*% (p*s1) - Y1)^2) +
+                    sum(as.vector(X2 %*% (p*s2) - Y2)^2),
+                p = p,
+                s1 = s1,
+                s2 = s2,
+                eps = eps_t,
+                X1 = X1,
+                X2 = X2,
+                max_diff_X1 = max_diff_X1,
+                max_diff_X2 = max_diff_X2,
+                prop1 = (p*s1) / sum(p*s1),
+                prop2 = (p*s2) / sum(p*s2)
+    )
+    return(res)
+}
+
+ini_prep <- function(cell_counts){
+    est <- dirmult(cell_counts)
+    cell.prop.alpha <- est$gamma
+    return(cell.prop.alpha)
+}

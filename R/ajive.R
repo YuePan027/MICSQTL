@@ -48,9 +48,9 @@
 #' normalized scores on horizontal axis (valid if plot = TRUE).
 #' @param scatter_y A character of variable name indicating which common
 #' normalized scores on vertical axis (valid if plot = TRUE).
-#' @param loading_out A logical value indicating whether to output the
-#'  corresponding joint loadings for each data source. See manuscript at 
-#'  https://arxiv.org/pdf/1704.02060.pdf for more details.
+#' @param refactor_loading A logical value indicating whether to output the 
+#' refactor joint loadings for each data source. A smaller value indicates 
+#' features with the highest variance explained within the joint space.
 #'
 #' @return A `SummarizedExperiment`. The results from AJIVE will be stored as
 #' an element (`ajive_res`) in `metadata` slot.
@@ -77,38 +77,40 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
                          plot = FALSE,
                          score = "cns_1", group_var = "disease",
                          scatter = FALSE, scatter_x, scatter_y,
-                         loading_out = FALSE) {
-    if (level == "bulk") {
-        dat1 <- assay(se)
-        if (use_marker) {
-            in_use <- intersect(
-                rownames(metadata(se)$gene_data),
-                rownames(metadata(se)$ref_gene)
-            )
-            dat2 <- metadata(se)[[test]][in_use, , drop = FALSE]
-        } else {
-            dat2 <- metadata(se)[[test]]
-        }
-    } else {
-        dat1 <- metadata(se)$TCA_deconv[[level]]
-        dat2 <- metadata(se)$TCA_deconv2[[level]]
-    }
-
-    if (!all(colnames(dat1) == colnames(dat2))) {
-        stop("Samples in the first data do not match that in the second data")
-    }
-
-    blocks_test <- list(
-        scale(t(dat1), center = TRUE, scale = FALSE),
-        scale(t(dat2), center = TRUE, scale = FALSE)
-    )
-    ajive_res <- ajive(blocks_test, ini_rank)
-    metadata(se)$ajive_res <- ajive_res
-    cns <- get_common_normalized_scores(ajive_res)
-    metadata(se)$cns <- cns
-    joint_rank <- ajive_res$joint_rank
-    metadata(se)$joint_rank <- joint_rank
+                         refactor_loading = FALSE) {
     
+    if(is.null(metadata(se)$ajive_res)){
+        if (level == "bulk") {
+            dat1 <- assay(se)
+            if (use_marker) {
+                in_use <- intersect(
+                    rownames(metadata(se)$gene_data),
+                    rownames(metadata(se)$ref_gene)
+                )
+                dat2 <- metadata(se)[[test]][in_use, , drop = FALSE]
+            } else {
+                dat2 <- metadata(se)[[test]]
+            }
+        } else {
+            dat1 <- metadata(se)$TCA_deconv[[level]]
+            dat2 <- metadata(se)$TCA_deconv2[[level]]
+        }
+        
+        if (!all(colnames(dat1) == colnames(dat2))) {
+            stop("Samples in the first data do not match that in the second data")
+        }
+        
+        blocks_test <- list(
+            scale(t(dat1), center = TRUE, scale = FALSE),
+            scale(t(dat2), center = TRUE, scale = FALSE)
+        )
+        ajive_res <- ajive(blocks_test, ini_rank)
+        metadata(se)$ajive_res <- ajive_res
+        cns <- get_common_normalized_scores(ajive_res)
+        metadata(se)$cns <- cns
+        joint_rank <- ajive_res$joint_rank
+        metadata(se)$joint_rank <- joint_rank
+    }
     if(plot){
         cns <- metadata(se)$cns
         colnames(cns) <- paste("cns", seq_len(ncol(cns)), sep = "_")
@@ -180,10 +182,21 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
         }
         metadata(se)$cns_plot <- plot
     }
-    
-    if(loading_out){
-        metadata(se)$loadings <- list(get_block_loadings(ajive_res, 1, "joint"),
-                            get_block_loadings(ajive_res, 2, "joint"))
+    if(refactor_loading){
+        refactor <- lapply(1:2, function(i){
+            loadings <- get_block_loadings(ajive_res, i, "joint")
+            if(i == 1){
+                data <- as.matrix(assay(se))
+            } else{
+                data <- as.matrix(metadata(se)$gene_dat)
+            }
+            protein_app <- loadings %*%
+                t(loadings) %*% data  
+            row_dist1 <- rowSums((data- protein_app)^2)
+            names(row_dist1) <- rownames(data)
+            return(row_dist1)
+        })
+        metadata(se)$refactor <- refactor
     }
     return(se)
 }

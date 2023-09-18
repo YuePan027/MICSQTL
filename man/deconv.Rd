@@ -8,47 +8,69 @@ heterogeneous tissues}
 deconv(
   se,
   source = "protein",
-  method = "nnls",
-  iter = FALSE,
-  Max_iter = 20,
-  Diff_max = 0.015
+  method = c("nnls", "Joint", "TCA"),
+  use_refactor = c(1000, NULL),
+  Step = c(10^(-6), 10^(-6)),
+  Eps = 10^(-5),
+  Iter = 500,
+  cell_counts
 )
 }
 \arguments{
 \item{se}{A `SummarizedExperiment` object with bulk protein expression
 data frame contained in `counts` slot,
 a bulk transcript expression data frame (`gene_data`) contained in
-`metadata` slot, and
-a "signature matrix" which serves as a reference of known cellular signatures
- contained as an element start with
-`sig` (`ref_protein` or `ref_gene` depends on `source`) in `metadata` slot.
-Note that the 'signature matrix' should only include markers that have been
-demonstrated to be useful in previous
-literature to ensure reliable results.}
+`metadata` slot. A "signature matrix" functions as a reference containing 
+known cellular signatures (either `ref_protein` or `ref_gene` as an element 
+in the `metadata` slot) may be necessary for certain `source`and `method` 
+options. To ensure the reliability of the results obtained, we strongly 
+recommend that the "signature matrix" should exclusively comprise markers 
+that have been previously validated in the literature.}
 
 \item{source}{A character string denotes which molecular profiles to be
 deconvoluted. The setting of `proteins`
 or `transcript` means single-source
 deconvolution with source-specific signature matrix, while `cross` means
-proteome deconvolution based on
-pre-estimated transcriptome proportion. If `cross`, an input of 
-pre-estimated transcriptome proportion `prop_gene` is required in 
-`metadata` slot.}
+proteome deconvolution based on transcriptome-proteome with matched samples.}
 
-\item{method}{A character string denotes which deconvolution method to use.
-In the current version, only `nnls` is supported for single source.}
+\item{method}{A character string specifies the deconvolution method to be 
+employed. In the current version, only `nnls` is supported for 
+single-source deconvolution. 
+For cross-source deconvolution, 'Joint' or 'TCA' are valid options. 
+If 'Joint', an external reference containing cell counts 
+in a similar tissue type (typically obtainable from small-scale single-cell 
+or flow cytometry experiments) is necessary. 
+If 'TCA', an input of pre-estimated transcriptome 
+proportions, denoted as `prop_gene` as an element in the `metadata` slot, 
+is required. This input can be derived from single-source deconvolution 
+using `nnls` included in this package, or from an external source.}
 
-\item{iter}{If TRUE, iterate estimated proportion until converged.}
+\item{use_refactor}{A numeric value indicate the number of proteins included
+for proportion estimates based on refactor values. Note that `ajive_decomp`
+with `refactor_loading = TRUE` required if this method applied. 
+If NULL, then all proteins included in assay will be used.}
 
-\item{Max_iter}{The maximum number of iterations if not converged.}
+\item{Step}{A numeric vector indicates the step size in projected gradient 
+descent for cell count fraction parameter and cell size parameter, 
+respectively. Only valid if `method = Joint`.}
 
-\item{Diff_max}{The convergence metric for each iteration, 
-defined as the maximum difference from the previous iteration.}
+\item{Eps}{A numeric value indicates the convergence criteria for projected 
+gradient descent. Only valid if `method = Joint`.}
+
+\item{Iter}{A numeric value indicates the maximum iteration time for 
+projected gradient descent. Only valid if `method = Joint`.}
+
+\item{cell_counts}{A matrix containing cell counts across multiple subjects, 
+where subjects are represented as rows and cell types as columns. Each entry 
+(i, j) in the matrix indicates the count of cells belonging to the ith 
+subject and jth cell type. Only required if `method = Joint`.}
 }
 \value{
 A `SummarizedExperiment`. The cell-type proportion estimates for
 each sample will be stored as an
-element start with `prop` in `metadata` slot.
+element start with `prop` in `metadata` slot. If `method = Joint`, then the 
+cellular fractions obtained from proteomics and transcriptomics are stored 
+in the `prop` and `prop2`, respectively, within the `metadata` slot.
 }
 \description{
 This function returns a `SummarizedExperiment` object including cell-type
@@ -60,6 +82,6 @@ using either single or cross sources.
 }
 \examples{
 data(se)
-se <- deconv(se, source = "protein", method = "nnls")
+se <- deconv(se, source = "protein", method = "nnls", use_refactor = NULL)
 
 }

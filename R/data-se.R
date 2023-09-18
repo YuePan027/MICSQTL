@@ -30,6 +30,10 @@
 #'   \item{meta}{A data frame with 127 rows (sample) and 2 columns
 #' (disease status and gender) as metadata.}
 #'   \item{prop}{An example cellular composition by running `deconv` function.}
+#'   \item{cell_counts}{A matrix containing cell counts across multiple subjects, 
+#' where subjects are represented as rows and cell types as columns. Each entry 
+#' (i, j) in the matrix indicates the count of cells belonging to the ith 
+#' subject and jth cell type.}
 #' }
 #' 
 #' @return A `SummarizedExperiment`object.

@@ -4,20 +4,10 @@ Quantitative Trait Loci
 
 # Introduction
 
-Our pipeline, `MICSQTL`, utilizes scRNA-seq reference and bulk
-transcriptomes to estimate cellular composition in the matched bulk
-proteomes. The expression of genes and proteins at either bulk level or
-cell type level can be integrated by Angle-based Joint and Individual
-Variation Explained (AJIVE) framework. Meanwhile, `MICSQTL` can perform
-cell-type-specic quantitative trait loci (QTL) mapping to proteins or
-transcripts based on the input of bulk expression data and the estimated
-cellular composition per molecule type, without the need for single cell
-sequencing. We use matched transcriptome-proteome from human brain
-frontal cortex tissue samples to demonstrate the input and output of our
-tool. 
+Our pipeline, `MICSQTL`, integrates RNA and protein expressions to detect potential cell marker proteins and estimate cell abundance in mixed proteomes without a reference signature matrix. `MICSQTL` enables cell-type-specific quantitative trait loci (QTL) mapping for proteins or transcripts using bulk expression data and estimated cellular composition per molecule type, eliminating the necessity for single-cell sequencing. We use matched transcriptome-proteome from human brain frontal cortex tissue samples to demonstrate the input and output of our tool.
 This pipeline enables valuable insights into cellular composition, facilitates cell-type-specific protein QTL mapping, and streamlines multi-modal data integration and dimension reduction.
 
-![MICSQTL workflow.](./vignettes/fig1.PNG)
+![MICSQTL workflow.](./vignettes/Fig1.png)
 
 ## Install
 
@@ -76,6 +66,11 @@ containing the following elements:
 -   meta:A data frame with 127 rows (sample) and 2 columns (disease
     status and gender) as metadata.
 
+-   cell_counts: A matrix containing cell counts across multiple subjects, 
+    where subjects are represented as rows and cell types as columns. Each entry 
+    (i, j) in the matrix indicates the count of cells belonging to the ith 
+    subject and jth cell type.
+
 ``` r
 data(se)
 ```
@@ -93,32 +88,23 @@ that as an element (`prop`) in `metadata` slot and this deconvolution
 step can be skipped. Note that the samples in the cell-type proportion
 estimates must match the samples from bulk protein expression data.
 
-## Cross-source cell-type proportion deconvolution (optional)
+## Cross-source cell-type proportion deconvolution
 
-The reference matrix for pure cell proteomics may be incomplete due to
-the limitations of single-cell proteomics technologies. To address this,
-we propose a cross-source cell-type fraction deconvolution method that
-leverages matched bulk transcriptome-proteome data. In the following
-example, we demonstrate how to estimate protein proportions by utilizing
-information from deconvoluted transcriptomes.
+The reference matrix for pure cell proteomics may be incomplete due to the limitations of single-cell proteomics technologies. To address this, we propose a novel cross-source cell-type fraction deconvolution method (Joint-AJ-RF) that leverages matched bulk transcriptome-proteome data. In the following example, we demonstrate how to estimate protein proportions by utilizing information from deconvoluted transcriptomes.
 
-Please note that the process described assumes that pre-defined
-deconvoluted transcriptome proportions are available, which are stored
-as prop_gene in the metadata slot. In the provided example, the
-estimated proportions were obtained using
-[CIBERSORT](https://cibersort.stanford.edu/). However, users have the
-flexibility to try other methods such as MuSiC, among others.
+This method requires an external reference with cell counts from a similar tissue type (usually from small-scale single-cell or flow cytometry experiments). We provide a sample cell counts table in the metadata for illustration; however, in practice, it should be sourced from a matching tissue type.
+
+The `ajive_decomp` function (more on this in the following section) with `refactor_loading = TRUE` should be employed to improve joint deconvolution by performing cross-source feature selection for potential protein cell markers.
 
 ``` r
-se <- deconv(se, source = "cross")
+se <- ajive_decomp(se, use_marker = FALSE, refactor_loading = TRUE)
+se <- deconv(se, source = "cross", method = "Joint",
+                 use_refactor = 1000, cell_counts = se@metadata$cell_counts)
 ```
 
 ![](./vignettes/plot2-1.png)<!-- -->
 
-Please note that for a more accurate and stable result, you can
-iteratively update the proportion by setting `iter = TRUE`. This allows
-the estimation to be refined through multiple iterations until
-convergence.
+An alternative approach involves a two-step process. First, obtain a sample-wise pre-defined deconvoluted transcriptome proportion and store as `prop_gene` in the `metadata` slot, use methods like CIBERSORT or MuSiC. Then, utilize the TCA algorithm (https://cran.r-project.org/web/packages/TCA/index.html) to calculate protein proportion estimates.
 
 ## Integrative analysis
 
@@ -140,9 +126,10 @@ disease status of these samples are well separated by the first common
 normalized scores.
 
 ``` r
-se <- ajive_decomp(se, use_marker = TRUE, 
-                   score = "cns_1", group_var = "disease", scatter = TRUE,
-                   scatter_x = "cns_1", scatter_y = "cns_2")
+se <- ajive_decomp(se, plot = TRUE,
+                   group_var = "disease",
+                   scatter = TRUE, scatter_x = "cns_1", scatter_y = "cns_2")
+metadata(se)$cns_plot
 ```
 
 ![](./vignettes/ajive-1.png)<!-- -->
@@ -163,8 +150,6 @@ ggpairs(pca_res_protein,
 ![](./vignettes/pca-1.png)<!-- -->
 
 ``` r
-
-
 pca_res <- prcomp(t(slot(se, "metadata")$gene_data), rank. = 3, scale. = FALSE)
 pca_res_gene <- data.frame(pca_res[["x"]])
 pca_res_gene <- cbind(pca_res_gene, slot(se, "metadata")$meta$disease)
@@ -321,65 +306,6 @@ head(res[order(apply(res, 1, min)), ])
 #> 6  0.130649793
 #> 16 0.163604428
 ```
-
-## TCA tensor deconvolution
-
-The cell-type-specific expression per bulk sample can be predicted using
-`TCA` deconvolution method given cellular composition (stored as `prop`
-in `metadata`). The output will be stored as an element (`TCA_deconv`)
-in `metadata` slot. It is a list with the length of the number of cell
-types (same as cell types in `prop` in `metadata` slot). Each element
-stores a deconvoluted protein expression per bulk sample. Below is an
-example to check the deconvoluted cellular expression for the first cell
-type (restricted to first 5 proteins and first 5 samples):
-
-``` r
-se <- TCA_deconv(se, prop = slot(se, "metadata")$prop)
-#> INFO [2023-06-09 13:33:01] Validating input...
-#> INFO [2023-06-09 13:33:01] Starting tensor for estimating Z...
-#> INFO [2023-06-09 13:33:01] Estimate tensor...
-#> INFO [2023-06-09 13:33:05] Finished estimating tensor.
-slot(se, "metadata")$TCA_deconv[["Astro"]][seq_len(5), seq_len(5)]
-#>       2014_2194 2014_2195 2014_2200 2014_2622 2014_2625
-#> AAGAB  16.18578  16.18576  16.18552  16.18559  16.18561
-#> AARS2  18.43365  18.21101  18.32831  18.35272  18.29298
-#> AASS   18.16801  18.01357  18.11252  18.11842  18.04431
-#> ABAT   23.19141  23.67366  23.23942  23.12347  22.93616
-#> ABCA1  16.35638  16.75004  16.18998  16.06425  16.14477
-```
-
-The figure below depict the cell-type-specific expression in one example
-protein.
-
-``` r
-res <- slot(se, "metadata")$TCA_deconv
-idx <- which(rownames(assay(se)) == "ABCA2")
-df_res <- do.call("cbind", lapply(seq_len(length(res)), function(i) {
-    df <- data.frame(t(res[[i]][idx, , drop = FALSE]))
-    colnames(df) <- names(res)[i]
-    return(df)
-}))
-idx <- which(slot(se, "metadata")$anno_SNP$ID == "9:137179658")
-table(slot(se, "metadata")$SNP_data[idx, ])
-#> 
-#>  0  1  2 
-#> 51 67  9
-```
-
-![](./vignettes/plot3-1.png)<!-- -->
-
-Such patterns may not be profound at bulk level.
-
-``` r
-df <- assay(se)
-df <- df[which(rownames(df) == "ABCA2"), ]
-df_test <- data.frame(
-    value = as.vector(t(df)),
-    genotype = slot(se, "metadata")$SNP_data[idx, ]
-)
-```
-
-![](./vignettes/plot4-1.png)<!-- -->
 
 # Licenses of the analysis methods
 

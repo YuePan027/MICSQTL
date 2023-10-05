@@ -531,6 +531,13 @@ MICSQTL_optim <- function(Y1, Y2,
         s2_u <- pmax(s2 - step_s * grad_si(X2, Y2, p, s2), 0)  
         X1_u <- X1 - 0.1 * grad_Xi(X1, Y1, p, s1)
         X2_u <- X2 - 0.1 * grad_Xi(X2, Y2, p, s2)
+        if(min(Y1) >= 0){
+            X1_u[X1_u < 0] <- 0
+        } 
+        if(min(Y2) >=0){
+            X2_u[X2_u < 0] <- 0
+        }
+        
         
         eps_t <- max(abs(p_u - p),
                      abs(p*s1 - p_u*s1_u),
@@ -568,3 +575,4 @@ ini_prep <- function(cell_counts){
     cell.prop.alpha <- est$gamma
     return(cell.prop.alpha)
 }
+

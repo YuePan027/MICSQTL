@@ -24,12 +24,19 @@ library(ggplot2)
 
 # Quick start
 
-A `SummarizedExperiment` object with bulk protein and/or gene expression
-contained in `counts` slot, and a “signature matrix” which serves as a
-reference of known cell type markers contained as an element in
-`metadata` slot is required as input file. We recommend including
-important marker proteins or genes in the signature matrix to obtain
-more reliable results.
+To conduct the analysis, you'll need to start with a `SummarizedExperiment` object that contains bulk protein expression data in the `assays` slot. The row metadata (`rowData` slot) should contain information about the proteins. Additionally, you'll require bulk gene expression data and a reference file (depends on the method you're using) included as elements in the `metadata` slot. For more accurate cell-type fraction estimations, it's recommended to include marker genes only. 
+
+This code chunk assumes that you already have a bulk protein matrix named "protein_data" and annotation information for proteins called "anno_protein." The gene expression data is stored in "gene_data." 
+
+``` r
+se <- SummarizedExperiment(
+    assays = list(protein = protein_data),
+    rowData = anno_protein
+)
+metadata(se) <- list(
+    gene_data = gene_data
+)
+```
 
 In this package, we provide an example `SummarizedExperiment` object
 containing the following elements:
@@ -147,7 +154,7 @@ ggpairs(pca_res_protein,
 ) + theme_classic()
 ```
 
-![](./vignettes/pca-1.png)<!-- -->
+![](./vignettes/pcaplot-1.png)<!-- -->
 
 ``` r
 pca_res <- prcomp(t(slot(se, "metadata")$gene_data), rank. = 3, scale. = FALSE)
@@ -160,7 +167,7 @@ ggpairs(pca_res_gene,
 ) + theme_classic()
 ```
 
-![](./vignettes/pca-2.png)<!-- -->
+![](./vignettes/pcaplot-2.png)<!-- -->
 
 ## Feature filtering
 

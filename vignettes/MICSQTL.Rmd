@@ -16,7 +16,7 @@ abstract: >
   MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by leveraging shared information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci (QTL) mapping at cellular resolution. This is a novel pipeline for multi-omic integrative data analysis that fulfills the need for comprehensive analysis of diverse data sources. This pipeline enables valuable insights into cellular composition, facilitates cell-type-specific protein QTL mapping, and streamlines multi-modal data integration and dimension reduction.
 ---
     
-    ```{r set, echo = FALSE}
+```{r set, echo = FALSE}
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>"
@@ -250,7 +250,7 @@ system.time(se <- csQTL(se))
 
 We can check the results from csQTL analysis for one of target proteins:
     
-    ```{r csQTL2, eval = FALSE}
+```{r csQTL2, eval = FALSE}
 res <- metadata(se)$TOAST_output[[2]]
 head(res[order(apply(res, 1, min)), ])
 ```

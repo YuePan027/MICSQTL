@@ -15,8 +15,8 @@ vignette: >
 abstract: >
   MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci) is a tool that estimates cell type proportions in bulk proteomes by leveraging shared information in matched transcriptomes. Based on the deconvoluted cell fractions, MICSQTL further integrates and visualizes multi-source profiles at bulk or cell type levels, as well as performs Quantitative Trait Loci (QTL) mapping at cellular resolution. This is a novel pipeline for multi-omic integrative data analysis that fulfills the need for comprehensive analysis of diverse data sources. This pipeline enables valuable insights into cellular composition, facilitates cell-type-specific protein QTL mapping, and streamlines multi-modal data integration and dimension reduction.
 ---
-
-```{r set, echo = FALSE}
+    
+    ```{r set, echo = FALSE}
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>"
@@ -54,25 +54,39 @@ library(ggplot2)
 
 # Quick start
 
-A `SummarizedExperiment` object with bulk protein and/or gene expression contained in `counts` slot, and a "signature matrix" which serves as a reference of known cell type markers contained as an element in `metadata` slot is required as input file. We recommend including important marker proteins or genes in the signature matrix to obtain more reliable results.
+To conduct the analysis, you'll need to start with a `SummarizedExperiment` object that contains bulk protein expression data in the `assays` slot. The row metadata (`rowData` slot) should contain information about the proteins. Additionally, you'll require bulk gene expression data and a reference file (depends on the method you're using) included as elements in the `metadata` slot. For more accurate cell-type fraction estimations, it's recommended to include marker genes only. 
+
+This code chunk assumes that you already have a bulk protein matrix named "protein_data" and annotation information for proteins called "anno_protein." The gene expression data is stored in "gene_data." 
+
+```{r eg, eval = FALSE}
+se <- SummarizedExperiment(
+    assays = list(protein = protein_data),
+    rowData = anno_protein
+)
+metadata(se) <- list(
+    gene_data = gene_data
+)
+```
+
+Further information is necessary for visualization and csQTL (cell-type specific quantitative trait loci) analysis. Additional metadata can be incorporated later using a command like `metadata(se)$new_data <- new_data` if needed. For detailed instructions, please refer to the following sections and function documentation.
 
 In this package, we provide an example `SummarizedExperiment` object containing the following elements:
+    
+-   protein_data: A subset of proteomic data PsychENCODE with 2,242 rows (protein) and 127 columns (sample).
 
--   protein_data: A subset of proteomic data PsychENCODE with 2242 rows (protein) and 127 columns (sample).
+-   anno_protein: A data frame with 2,242 rows and 4 columns (Chr, Start, End, Symbol) as annotations of each protein from `protein_data`.
 
--   anno_protein: A data frame with 2242 rows and 4 columns (Chr, Start, End, Symbol) as annotations of each protein from `protein_data`.
+-   ref_protein: A signature matrix with 2,242 rows (protein) and 4 columns (cell types), which serves as a reference of known cellular signatures.
 
--   ref_protein: A signature matrix with 2242 rows (protein) and 4 columns (cell types), which serves as a reference of known cellular signatures.
+-   gene_data: A data frame with 2,867 rows (genes) and 127 columns (sample).
 
--   gene_data: A data frame with 2867 rows (genes) and 127 columns (sample).
-
--   ref_gene: A signature matrix with 4872 rows (genes) and 5 columns (cell types), which serves as a reference of known cellular signatures.
+-   ref_gene: A signature matrix with 4,872 rows (genes) and 5 columns (cell types), which serves as a reference of known cellular signatures.
 
 -   prop_gene: A pre-defined deconvoluted transcriptome proportion matrix.
 
--   SNP_data: A sparse matrix with 2000 rows (SNP), which stores the information of genetic variants at each location from one chromosome and 127 columns (sample, should match the sample in `protein_data`). Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
+-   SNP_data: A sparse matrix with 2,000 rows (SNP), which stores the information of genetic variants at each location from one chromosome and 127 columns (sample, should match the sample in `protein_data`). Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
 
--   anno_SNP: A data frame with 2000 rows and 3 columns (CHROM, POS, ID), which stores Annotations of each SNP from `SNP_data`.
+-   anno_SNP: A data frame with 2,000 rows and 3 columns (CHROM, POS, ID), which stores Annotations of each SNP from `SNP_data`.
 
 -   meta:A data frame with 127 rows (sample) and 2 columns (disease status and gender) as metadata.
 
@@ -83,6 +97,8 @@ subject and jth cell type.
 ```{r obj}
 data(se)
 ```
+
+
 
 ## Cell-type proportion deconvolution
 
@@ -103,7 +119,7 @@ The `ajive_decomp` function (more on this in the following section) with `refact
 ```{r cross, message = FALSE, warning = FALSE, results = FALSE, eval = FALSE}
 se <- ajive_decomp(se, use_marker = FALSE, refactor_loading = TRUE)
 se <- deconv(se, source = "cross", method = "Joint",
-                 use_refactor = 1000, cell_counts = se@metadata$cell_counts)
+             use_refactor = 1000, cell_counts = se@metadata$cell_counts)
 ```
 
 ```{r plot2, echo = FALSE, warning = FALSE, eval = FALSE}
@@ -160,8 +176,8 @@ colnames(pca_res_protein)[4] <- "disease"
 
 ```{r pcaplot, eval = FALSE}
 ggpairs(pca_res_protein,
-    columns = seq_len(3), aes(color = disease, alpha = 0.5),
-    upper = list(continuous = "points")
+        columns = seq_len(3), aes(color = disease, alpha = 0.5),
+        upper = list(continuous = "points")
 ) + theme_classic()
 
 
@@ -170,8 +186,8 @@ pca_res_gene <- data.frame(pca_res[["x"]])
 pca_res_gene <- cbind(pca_res_gene, metadata(se)$meta$disease)
 colnames(pca_res_gene)[4] <- "disease"
 ggpairs(pca_res_gene,
-    columns = seq_len(3), aes(color = disease, alpha = 0.5),
-    upper = list(continuous = "points")
+        columns = seq_len(3), aes(color = disease, alpha = 0.5),
+        upper = list(continuous = "points")
 ) + theme_classic()
 ```
 
@@ -233,8 +249,8 @@ system.time(se <- csQTL(se))
 ```
 
 We can check the results from csQTL analysis for one of target proteins:
-
-```{r csQTL2, eval = FALSE}
+    
+    ```{r csQTL2, eval = FALSE}
 res <- metadata(se)$TOAST_output[[2]]
 head(res[order(apply(res, 1, min)), ])
 ```

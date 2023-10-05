@@ -1,4 +1,7 @@
-# MICSQTL 1.0.0
+# MICSQTL 0.99.16
+- Enhance PGD to handle a wider range of omics data inputs.
+
+# MICSQTL 0.99.15
 - Update deconv and ajive by integrating a novel feature selection approach 
 and improved deconvolution method.
 

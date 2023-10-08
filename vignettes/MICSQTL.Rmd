@@ -191,9 +191,9 @@ ggpairs(pca_res_gene,
 ) + theme_classic()
 ```
 
-![Top3 principal components of proteome.](pca-1.png)
+![Top3 principal components of proteome.](pcaplot-1.png)
 
-![Top3 principal components of proteome and transcriptome.](pca-2.png)
+![Top3 principal components of proteome and transcriptome.](pcaplot-2.png)
 
 ## Feature filtering
 

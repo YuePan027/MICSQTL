@@ -1,4 +1,7 @@
-# MICSQTL 0.99.16
+# MICSQTL 0.99.17
+- Fix file name in vignette.
+
+MICSQTL 0.99.16
 - Enhance PGD to handle a wider range of omics data inputs.
 
 # MICSQTL 0.99.15

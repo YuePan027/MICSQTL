@@ -138,7 +138,6 @@ ggplot(
     geom_boxplot(lwd = 0.7, outlier.shape = NA) +
     theme_classic() +
     facet_wrap(~disease) +
-    #scale_fill_manual(values = mycolors) +
     xlab("Cell type") +
     ylab("Estimated proportion") +
     theme(legend.position = "none")
@@ -191,9 +190,9 @@ ggpairs(pca_res_gene,
 ) + theme_classic()
 ```
 
-![Top3 principal components of proteome.](pca-1.png)
+![Top3 principal components of proteome.](pcaplot-1.png)
 
-![Top3 principal components of proteome and transcriptome.](pca-2.png)
+![Top3 principal components of transcriptome.](pcaplot-2.png)
 
 ## Feature filtering
 

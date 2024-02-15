@@ -33,9 +33,11 @@ Imports:
     S4Vectors,
     dirmult
 Depends: 
-    R (>= 4.2.0),
+    R (>= 4.3.0),
     SummarizedExperiment,
     stats
 RoxygenNote: 7.2.3
 LazyData: false
 Config/testthat/edition: 3
+URL: https://bioconductor.org/packages/MICSQTL, https://github.com/YuePan027/MICSQTL
+BugReports: https://github.com/YuePan027/MICSQTL/issues

@@ -228,12 +228,13 @@ For filtering at protein or gene level, only those symbols contained in `target_
 
 For filtering at SNP level, there are three options: (1) filter out the SNPs that have minor allele frequency below the threshold defined by `filter_allele` argument (`filter_method = "allele"`); (2) filter out the SNPs that the fraction of samples in the smallest genotype group below the threshold defined by `filter_geno` argument (`filter_method = "allele"`) and (3) restrict to cis-regulatory variants (`filter_method = "distance"`): the SNPs up to 1 Mb proximal to the start of the gene. Both filtering methods can be applied simultaneously by setting `filter_method = c("allele", "distance")`.
 
-The results after filtering will be stored as an element (`choose_SNP_list`) in `metadata` slot. It is a list with the length of the number of proteins for downstream analysis. Each element stores the index of SNPs to be tested for corresponding protein. The proteins with no SNPs correspond to it will be removed from the returned list.
-
 To simplify the analysis, we only test 3 targeted proteins from chromosome 9 as an example.
 
 ```{r filter3}
 target_protein <- rowData(se)[rowData(se)$Chr == 9, ][seq_len(3), "Symbol"]
+```
+
+```{r filter 4}
 se <- feature_filter(se,
     target_protein = target_protein,
     filter_method = c("allele", "distance"),
@@ -243,9 +244,11 @@ se <- feature_filter(se,
 )
 ```
 
+The results after filtering will be stored as an element (`choose_SNP_list`) in `metadata` slot. It is a list with the length of the number of proteins for downstream analysis. Each element stores the index of SNPs to be tested for corresponding protein. The proteins with no SNPs correspond to it will be removed from the returned list.
+
 In this example, the number of SNPs corresponding to each protein after filtering ranges from 7 to 26.
 
-```{r filter4}
+```{r filter5}
 unlist(lapply(metadata(se)$choose_SNP_list, length))
 ```
 

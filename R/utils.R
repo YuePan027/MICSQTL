@@ -565,7 +565,7 @@ MICSQTL_optim <- function(Y1, Y2,
     if(iter_t >= iter & eps_t > eps){
         warning("Max iteration reached without convergence")
     }
-    cat(paste0("iter = ", iter_t, " eps = ", eps_t, "\n"))
+    message("iter = ", iter_t, " eps = ", eps_t, "\n")
     res <- list(iter = iter_t,
                 L = sum(as.vector(X1 %*% (p*s1) - Y1)^2) +
                     sum(as.vector(X2 %*% (p*s2) - Y2)^2),

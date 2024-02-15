@@ -43,8 +43,8 @@ which cell type should be used. By default, the integrative analysis is done
 at bulk level.}
 
 \item{plot}{If TRUE, visualization on common normalized scores across 
-different data sources will be stored as an element (`cns_plot`) in `metadata` 
-slot.}
+different data sources will be stored as an element (`cns_plot`) in 
+`metadata` slot.}
 
 \item{score}{A character of variable name indicating which common
 normalized score is used for boxplot and ridge plot (valid if plot = TRUE).}

@@ -24,9 +24,9 @@ data frame contained in `counts` slot,
 a bulk transcript expression data frame (`gene_data`) contained in
 `metadata` slot (both on log scale). A "signature matrix" functions as a 
 reference containing known cellular signatures (either `ref_protein` or 
-`ref_gene` as an element in the `metadata` slot) may be necessary for certain 
-`source`and `method` options. To ensure the reliability of the results 
-obtained, we strongly recommend that the "signature matrix" should 
+`ref_gene` as an element in the `metadata` slot) may be necessary for 
+certain `source`and `method` options. To ensure the reliability of the 
+results obtained, we strongly recommend that the "signature matrix" should 
 exclusively comprise markers that have been previously validated in the 
 literature.}
 
@@ -84,11 +84,16 @@ transformation is applied, so `ref_pnl` should be provided on a raw scale
 if used.}
 }
 \value{
-A `SummarizedExperiment`. The cell-type proportion estimates for
-each sample will be stored as an element start with `prop` in `metadata` 
-slot. If `method = Joint`, then the cellular fractions obtained from 
-proteomics and transcriptomics are stored in the `prop` and `prop2`, 
-respectively, within the `metadata` slot.
+A `SummarizedExperiment`. The cell-type proportion estimates for each
+sample are stored as elements starting with prop in the metadata slot. 
+If method = Joint, then the cellular fractions obtained from proteomics and 
+transcriptomics are stored in the prop and prop2 elements, respectively, 
+within the metadata slot. The purified data is stored in a list with the 
+same length as the number of subjects (the number of columns in the assay). 
+For subject i, the purified protein expression data can be obtained by 
+accessing `se_sim@metadata$purified[[i]][["X1"]]`, and similarly, 
+ the purified transcript expression data can be obtained by accessing 
+`se_sim@metadata$purified[[i]][["X2"]`].
 }
 \description{
 This function returns a `SummarizedExperiment` object including cell-type

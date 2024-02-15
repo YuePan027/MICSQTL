@@ -12,9 +12,9 @@
 #' a bulk transcript expression data frame (`gene_data`) contained in
 #' `metadata` slot (both on log scale). A "signature matrix" functions as a 
 #' reference containing known cellular signatures (either `ref_protein` or 
-#' `ref_gene` as an element in the `metadata` slot) may be necessary for certain 
-#' `source`and `method` options. To ensure the reliability of the results 
-#' obtained, we strongly recommend that the "signature matrix" should 
+#' `ref_gene` as an element in the `metadata` slot) may be necessary for 
+#' certain `source`and `method` options. To ensure the reliability of the 
+#' results obtained, we strongly recommend that the "signature matrix" should 
 #' exclusively comprise markers that have been previously validated in the 
 #' literature. 
 #' @param source A character string denotes which molecular profiles to be
@@ -62,11 +62,16 @@
 #' transformation is applied, so `ref_pnl` should be provided on a raw scale 
 #' if used.
 #'
-#' @return A `SummarizedExperiment`. The cell-type proportion estimates for
-#' each sample will be stored as an element start with `prop` in `metadata` 
-#' slot. If `method = Joint`, then the cellular fractions obtained from 
-#' proteomics and transcriptomics are stored in the `prop` and `prop2`, 
-#' respectively, within the `metadata` slot.
+#' @return A `SummarizedExperiment`. The cell-type proportion estimates for each
+#' sample are stored as elements starting with prop in the metadata slot. 
+#' If method = Joint, then the cellular fractions obtained from proteomics and 
+#' transcriptomics are stored in the prop and prop2 elements, respectively, 
+#' within the metadata slot. The purified data is stored in a list with the 
+#' same length as the number of subjects (the number of columns in the assay). 
+#' For subject i, the purified protein expression data can be obtained by 
+#' accessing `se_sim@metadata$purified[[i]][["X1"]]`, and similarly, 
+#'  the purified transcript expression data can be obtained by accessing 
+#' `se_sim@metadata$purified[[i]][["X2"]`].
 #' 
 #' @import SummarizedExperiment
 #' @importFrom magrittr "%>%"
@@ -102,8 +107,8 @@ deconv <- function(se,
         if(!is.null(use_refactor)){
             in_use <- intersect(in_use, 
                                 names(se@metadata$refactor[[1]])
-                                [order(se@metadata$refactor[[1]],
-                                       decreasing = FALSE)[1:use_refactor]])
+                                [order(se@metadata$refactor[[1]], decreasing = 
+                                           FALSE)[seq_len(use_refactor)]])
         }
         if (any(length(in_use) == 0)) {
             stop("None of the feaures in 'signature matrix' exist in bulk
@@ -152,7 +157,8 @@ deconv <- function(se,
     }
     if (source == "cross") {
         if (!method %in% c("Joint", "TCA", "nnls")) {
-            stop("At the current version, only nnls, Joint, and TCA are supported methods.")
+            stop("At the current version, 
+                 only nnls, Joint, and TCA are supported methods.")
         }
         if(method == "Joint"){
             in_prot <- rownames(assay(se))
@@ -163,10 +169,11 @@ deconv <- function(se,
                             recommended as it can result in invalid outcomes.")
                 }
                 in_prot <- names(se@metadata$refactor[[1]])
-                in_prot <- in_prot[order(se@metadata$refactor[[1]], 
-                                         decreasing = FALSE)[1:use_refactor]]
+                in_prot <- in_prot[
+                    order(se@metadata$refactor[[1]], 
+                          decreasing = FALSE)[seq_len(use_refactor)]]
             }
-            n_sample <- ncol(assay(se)[in_prot, ])
+            n_sample <- ncol(assay(se)[in_prot, , drop = FALSE])
             if(is.null(cell_counts)){
                 if(is.null(ref_pnl)){
                     K <- ncol(pinit)
@@ -185,7 +192,7 @@ deconv <- function(se,
             }
             n_feature1 <- length(in_prot)
             n_feature2 <- length(in_rna)
-            my_res <- lapply(1:n_sample, function(i){
+            my_res <- lapply(seq_len(n_sample), function(i){
                 if(!is.null(ref_pnl)){
                     if(mean(as.vector(ref_pnl) < 1) < 0.5){
                         X1 <- log2(ref_pnl[in_prot,]+1)
@@ -195,14 +202,12 @@ deconv <- function(se,
                         X2 <- log2(ref_pnl[in_rna,]+0.0001) 
                     }
                 } else{
-                    set.seed(1234)
                     X1 <- matrix(rnorm(n = K*n_feature1, 
                                        mean = mean(as.vector(
                                            as.matrix(assay(se)[in_prot, ]))), 
                                        sd = sd(as.vector(
                                            as.matrix(assay(se)[in_prot, ])))), 
                                  nrow = n_feature1)
-                    set.seed(1234)
                     X2 <- matrix(rnorm(n = K*n_feature2, 
                                        mean = mean(as.vector(as.matrix(
                                            metadata(se)$gene_data))), 
@@ -210,17 +215,17 @@ deconv <- function(se,
                                            metadata(se)$gene_data)))),
                                  nrow = n_feature2) 
                 }
-                Y1 <- as.matrix(assay(se)[in_prot, ])[,i]
-                Y2 <- as.matrix(metadata(se)$gene_data[in_rna, ])[,i]
+                Y1 <- as.matrix(assay(se)[in_prot, , drop = FALSE])[,i]
+                Y2 <- as.matrix(metadata(se)$gene_data[in_rna, , 
+                                                       drop = FALSE])[,i]
                 if(is.matrix(pinit)){
                     ini_p <- pinit[i,]
                 } else if(pinit == "rdirichlet"){
                     if (is.null(cell_counts)) {
                         stop("cell_counts is required for rdirichlet method.")
                     }
-                    set.seed(i)
                     health.cell.prop.alpha <- ini_prep(cell_counts)
-                    subj.var <- 0.04 # larger -> larger subject-level proportion var
+                    subj.var <- 0.04 #larger:larger subject-level proportion var
                     ini_p <- as.vector(rdirichlet(
                         1,(health.cell.prop.alpha*((1-subj.var)/subj.var))/
                             sum(health.cell.prop.alpha)))
@@ -228,7 +233,7 @@ deconv <- function(se,
                     if (is.null(ref_pnl)) {
                         stop("ref_pnl is required for nnls method.")
                     }
-                    result <- nnls::nnls(ref_pnl[in_rna,],
+                    result <- nnls::nnls(ref_pnl[in_rna, , drop = FALSE],
                                          2^(metadata(se)$gene_data[in_rna,i]))   
                     ini_p <- result$x/sum(result$x)
                 }
@@ -249,11 +254,12 @@ deconv <- function(se,
                                       step_s = Step[2],
                                       eps = Eps,
                                       iter = Iter)
-                return(res[c("prop1", "prop2", "X1", "X2", "ini_p", "s1", "s2")])
+                return(res[c("prop1", "prop2", "X1", "X2", 
+                             "ini_p", "s1", "s2")])
             })
             prop <- do.call(rbind, lapply(my_res, 
                                           function(sub_res) sub_res$prop1))
-            rownames(prop) <- colnames(assay(se)[in_prot, ])
+            rownames(prop) <- colnames(assay(se)[in_prot, , drop = FALSE])
             prop2 <- do.call(rbind, lapply(my_res, 
                                            function(sub_res) sub_res$prop2))
             rownames(prop2) <- colnames(metadata(se)$gene_data)
@@ -284,15 +290,16 @@ deconv <- function(se,
             in_prot <- rownames(assay(se))
             if(!is.null(use_refactor)){
                 in_prot <- names(se@metadata$refactor[[1]])
-                in_prot <- in_prot[order(se@metadata$refactor[[1]], 
-                                         decreasing = FALSE)[1:use_refactor]]
+                in_prot <- in_prot[
+                    order(se@metadata$refactor[[1]], 
+                          decreasing = FALSE)[seq_len(use_refactor)]]
             }
             prot_data <- 
                 tca_res <- TCA::tca(
-                    X = assay(se)[in_prot, ],
+                    X = assay(se)[in_prot, , drop = FALSE],
                     W = ini_prop,
                     refit_W = TRUE,
-                    refit_W.sparsity = nrow(assay(se)[in_prot, ])
+                    refit_W.sparsity = nrow(assay(se)[in_prot, , drop = FALSE])
                 )
             prop <- tca_res$W
             metadata(se)$prop <- prop

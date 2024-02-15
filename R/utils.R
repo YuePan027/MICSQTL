@@ -511,19 +511,28 @@ grad_Xi <- function(X,Y,p,s){
     return(grad)
 }
 
+ini_prep <- function(cell_counts){
+    est <- dirmult(cell_counts)
+    cell.prop.alpha <- est$gamma
+    return(cell.prop.alpha)
+}
+
+
 MICSQTL_optim <- function(Y1, Y2,
-                          ini_p, ini_s,
-                          X1, 
-                          X2,
-                          step_p,
-                          step_s,
-                          eps,
-                          iter){
+                           ini_p, ini_s,
+                           X1, 
+                           X2,
+                           step_p,
+                           step_s,
+                           eps,
+                           iter){
     p <- ini_p
     s1 <- ini_s[[1]]
     s2 <- ini_s[[2]]
     eps_t <- 0.2
     iter_t <- 1
+    X1_init <- X1
+    X2_init <- X2
     res <- list()
     while(eps_t > eps & iter_t < iter){
         p_u <- pmax(p - step_p * grad_p(X1, Y1, X2, Y2, p, s1, s2), 0)
@@ -531,14 +540,14 @@ MICSQTL_optim <- function(Y1, Y2,
         s2_u <- pmax(s2 - step_s * grad_si(X2, Y2, p, s2), 0)  
         X1_u <- X1 - 0.1 * grad_Xi(X1, Y1, p, s1)
         X2_u <- X2 - 0.1 * grad_Xi(X2, Y2, p, s2)
+        
         if(min(Y1) >= 0){
             X1_u[X1_u < 0] <- 0
         } 
         if(min(Y2) >=0){
             X2_u[X2_u < 0] <- 0
         }
-        
-        
+    
         eps_t <- max(abs(p_u - p),
                      abs(p*s1 - p_u*s1_u),
                      abs(p*s2 - p_u*s2_u),
@@ -553,6 +562,10 @@ MICSQTL_optim <- function(Y1, Y2,
         X2 <- X2_u
         iter_t <- iter_t + 1
     }
+    if(iter_t >= iter & eps_t > eps){
+        warning("Max iteration reached without convergence")
+    }
+    cat(paste0("iter = ", iter_t, " eps = ", eps_t, "\n"))
     res <- list(iter = iter_t,
                 L = sum(as.vector(X1 %*% (p*s1) - Y1)^2) +
                     sum(as.vector(X2 %*% (p*s2) - Y2)^2),
@@ -565,14 +578,10 @@ MICSQTL_optim <- function(Y1, Y2,
                 max_diff_X1 = max_diff_X1,
                 max_diff_X2 = max_diff_X2,
                 prop1 = (p*s1) / sum(p*s1),
-                prop2 = (p*s2) / sum(p*s2)
+                prop2 = (p*s2) / sum(p*s2),
+                ini_p = ini_p,
+                X1_init = X1_init,
+                X2_init = X2_init
     )
     return(res)
 }
-
-ini_prep <- function(cell_counts){
-    est <- dirmult(cell_counts)
-    cell.prop.alpha <- est$gamma
-    return(cell.prop.alpha)
-}
-

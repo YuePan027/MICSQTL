@@ -12,7 +12,7 @@ S4Vectors::metadata(se) <- list(meta = metadata)
 
 test_that("deconv function gives error for invalid inputs", {
     expect_error(
-        deconv(se, method = "nnls", use_refactor = NULL),
+        deconv(se, source = "protein", method = "nnls", use_refactor = NULL),
         "None of the feaures in 'signature matrix' exist in bulk
                  expression data."
     )

@@ -33,7 +33,7 @@ Imports:
     S4Vectors,
     dirmult
 Depends: 
-    R (>= 4.3.0),
+    R (>= 4.2.0),
     SummarizedExperiment,
     stats
 RoxygenNote: 7.2.3

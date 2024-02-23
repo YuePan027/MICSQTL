@@ -80,25 +80,25 @@ For detailed instructions, please refer to the following sections and function d
 
 In this package, we provide an example `SummarizedExperiment` object containing the following elements:
     
--   protein_data: A subset of proteomic data PsychENCODE (on log scale) with 2,242 rows (protein) and 127 columns (sample).
+-   protein_data (assay): A subset of proteomic data PsychENCODE (on log scale) with 2,242 rows (protein) and 127 columns (sample).
 
--   anno_protein: A data frame with 2,242 rows and 4 columns (Chr, Start, End, Symbol) as annotations of each protein from `protein_data`.
+-   anno_protein (rowData): A data frame with 2,242 rows and 4 columns (Chr, Start, End, Symbol) as annotations of each protein from `protein_data`.
 
--   ref_protein: A signature matrix with 2,242 rows (protein) and 4 columns (cell types), which serves as a reference of known cellular signatures (on raw scale).
+-   ref_protein (in metadata): A signature matrix with 2,242 rows (protein) and 4 columns (cell types), which serves as a reference of known cellular signatures (on raw scale).
 
--   gene_data: A data frame with 2,867 rows (genes) and 127 columns (sample) (on log scale).
+-   gene_data (in metadata): A data frame with 2,867 rows (genes) and 127 columns (sample) (on log scale).
 
--   ref_gene: A signature matrix with 4,872 rows (genes) and 5 columns (cell types), which serves as a reference of known cellular signatures (on raw scale).
+-   ref_gene (in metadata): A signature matrix with 4,872 rows (genes) and 5 columns (cell types), which serves as a reference of known cellular signatures (on raw scale).
 
--   prop_gene: A pre-defined deconvoluted transcriptome proportion matrix.
+-   prop_gene (in metadata): A pre-defined deconvoluted transcriptome proportion matrix.
 
--   SNP_data: A sparse matrix with 2,000 rows (SNP), which stores the information of genetic variants at each location from one chromosome and 127 columns (sample, should match the sample in `protein_data`). Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
+-   SNP_data (in metadata): A sparse matrix with 2,000 rows (SNP), which stores the information of genetic variants at each location from one chromosome and 127 columns (sample, should match the sample in `protein_data`). Each matrix entry corresponds to the genotype group indicator (0, 1 or 2) for a sample at a genetic location.
 
--   anno_SNP: A data frame with 2,000 rows and 3 columns (CHROM, POS, ID), which stores Annotations of each SNP from `SNP_data`.
+-   anno_SNP (in metadata): A data frame with 2,000 rows and 3 columns (CHROM, POS, ID), which stores Annotations of each SNP from `SNP_data`.
 
--   meta:A data frame with 127 rows (sample) and 2 columns (disease status and gender) as metadata.
+-   meta (in metadata):A data frame with 127 rows (sample) and 2 columns (disease status and gender) as metadata.
 
--   cell_counts: A matrix containing cell counts across multiple subjects, where subjects are represented as rows and cell types as columns. Each entry 
+-   cell_counts (in metadata): A matrix containing cell counts across multiple subjects, where subjects are represented as rows and cell types as columns. Each entry 
 (i, j) in the matrix indicates the count of cells belonging to the ith 
 subject and jth cell type.
 
@@ -157,7 +157,6 @@ ggplot(
 
 ![Boxplots of estimated cell proportions using cross-source.](plot2-1.png)
 
-An alternative approach involves a two-step process. First, obtain a sample-wise pre-defined deconvoluted transcriptome proportion and store as `prop_gene` in the `metadata` slot, use methods like CIBERSORT or MuSiC. Then, utilize the TCA algorithm (https://cran.r-project.org/web/packages/TCA/index.html) to calculate protein proportion estimates. 
 
 ## Integrative visualization
 

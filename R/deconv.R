@@ -193,6 +193,7 @@ deconv <- function(se,
             n_feature1 <- length(in_prot)
             n_feature2 <- length(in_rna)
             my_res <- lapply(seq_len(n_sample), function(i){
+                message("sample", i)
                 if(!is.null(ref_pnl)){
                     if(mean(as.vector(ref_pnl) < 1) < 0.5){
                         X1 <- log2(ref_pnl[in_prot,]+1)
@@ -239,8 +240,8 @@ deconv <- function(se,
                 }
                 ini_s <- list(rep(1,K), rep(1,K))
                 if(!is.null(cell_counts)){
-                    colnames(X1) <- colnames(ref_pnl)
-                    colnames(X2) <- colnames(ref_pnl)
+                    colnames(X1) <- colnames(cell_counts)
+                    colnames(X2) <- colnames(cell_counts)
                 } else{
                     colnames(X1) <- colnames(ref_pnl)
                     colnames(X2) <- colnames(ref_pnl)

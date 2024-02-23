@@ -495,9 +495,9 @@ get_block_loadings <- function(ajive_output, k, type){
     ajive_output$block_decomps[[k]][[type]][['v']]
 }
 
-grad_p <- function(X1, Y1, X2, Y2, p, s1, s2){
+grad_p <- function(X1, Y1, X2, Y2, p, p_init, s1, s2){
     grad <- rowSums(t(as.vector(X1 %*% (p*s1) - Y1) * X1) * s1) +
-        rowSums(t(as.vector(X2 %*% (p*s2) - Y2) * X2) * s2)
+        rowSums(t(as.vector(X2 %*% (p*s2) - Y2) * X2) * s2) + p-p_init
     return(grad)
 }
 
@@ -535,7 +535,7 @@ MICSQTL_optim <- function(Y1, Y2,
     X2_init <- X2
     res <- list()
     while(eps_t > eps & iter_t < iter){
-        p_u <- pmax(p - step_p * grad_p(X1, Y1, X2, Y2, p, s1, s2), 0)
+        p_u <- pmax(p - step_p * grad_p(X1, Y1, X2, Y2, p, ini_p, s1, s2), 0)
         s1_u <- pmax(s1 - step_s * grad_si(X1, Y1, p, s1), 0)
         s2_u <- pmax(s2 - step_s * grad_si(X2, Y2, p, s2), 0)  
         X1_u <- X1 - 0.1 * grad_Xi(X1, Y1, p, s1)
@@ -553,6 +553,7 @@ MICSQTL_optim <- function(Y1, Y2,
                      abs(p*s2 - p_u*s2_u),
                      max(abs(X1_u - X1)),
                      max(abs(X2_u - X2)))
+        ini_p <- p
         p <- p_u
         s1 <- s1_u
         s2 <- s2_u

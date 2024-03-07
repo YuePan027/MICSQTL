@@ -20,15 +20,16 @@ deconv(
 }
 \arguments{
 \item{se}{A `SummarizedExperiment` object with bulk protein expression
-data frame contained in `counts` slot,
+data frame contained in assay,
 a bulk transcript expression data frame (`gene_data`) contained in
-`metadata` slot (both on log scale). A "signature matrix" functions as a 
-reference containing known cellular signatures (either `ref_protein` or 
-`ref_gene` as an element in the `metadata` slot) may be necessary for 
-certain `source`and `method` options. To ensure the reliability of the 
-results obtained, we strongly recommend that the "signature matrix" should 
-exclusively comprise markers that have been previously validated in the 
-literature.}
+`metadata` slot (can be rescaled using either log or MinMax transformations,
+but need to be consistent between two bulk data). A "signature matrix" 
+functions as a reference containing known cellular signatures 
+(either `ref_protein` or `ref_gene` as an element in the `metadata` slot) 
+may be necessary for certain `source`and `method` options. 
+To ensure the reliability of the results obtained, we strongly recommend 
+that the "signature matrix" should exclusively comprise markers that have 
+been previously validated in the literature.}
 
 \item{source}{A character string denotes which molecular profiles to be
 deconvoluted. The setting of `proteins`or `transcript` means single-source
@@ -36,12 +37,14 @@ deconvolution with source-specific signature matrix, while `cross` means
 proteome deconvolution based on transcriptome-proteome with matched samples.}
 
 \item{method}{A character string specifies the deconvolution method to be 
-employed. In the current version, only `nnls` is supported for 
-single-source deconvolution. 
+employed. In the current version, only 'nnls' is supported for single-source 
+deconvolution. Besides the bulk data, `ref_protein` or `ref_gene` is 
+required for protein or gene deconvolution, respectively. 
 For cross-source deconvolution, `Joint` or `TCA` are valid options. 
 If `Joint`, an external reference containing cell counts 
 in a similar tissue type (typically obtainable from small-scale single-cell 
-or flow cytometry experiments) is necessary. 
+or flow cytometry experiments) is necessary if `pinit = "rdirichlet"`; 
+A "signature matrix" is required for other methods.
 If `TCA`, an input of pre-estimated transcriptome 
 proportions, denoted as `prop_gene` as an element in the `metadata` slot, 
 is required. This input can be derived from single-source deconvolution 
@@ -70,24 +73,25 @@ subject and jth cell type. Only required if `method = Joint` and
 
 \item{pinit}{Accepts either a numeric matrix or a character indicating the 
 method for initializing initial values for cellular fraction. If `pinit` is a
-numeric matrix, each row represents the cellular fraction for each sample 
+numeric matrix (pre-estimated transcriptome proportions using other methods), 
+each row represents the cellular fraction for each sample 
 across various cell types. The resulting cellular fraction will match the 
 cell types defined in `pinit`. Alternatively, `pinit` can be generated using 
-either the 'rdirichlet' or 'nnls' method.}
+either the `rdirichlet` or `nnls` method.}
 
 \item{ref_pnl}{A "signature matrix" functions as a reference containing 
 known cellular signatures. It is optional. If provided, the initial values 
 for purified data will be generated based on `ref_pnl`. Otherwise, 
 the initial values for purified data will be generated using a normal 
-distribution based on bulk data. Please note that an internal log 
-transformation is applied, so `ref_pnl` should be provided on a raw scale 
-if used.}
+distribution based on bulk data. Please note that the input signature matrix 
+should have the same rescaling transformation as the bulk 
+transcriptomes/proteomic.}
 }
 \value{
 A `SummarizedExperiment`. The cell-type proportion estimates for each
 sample are stored as elements starting with prop in the metadata slot. 
 If method = Joint, then the cellular fractions obtained from proteomics and 
-transcriptomics are stored in the prop and prop2 elements, respectively, 
+transcriptomics are stored in the `prop` and `prop2` elements, respectively, 
 within the metadata slot. The purified data is stored in a list with the 
 same length as the number of subjects (the number of columns in the assay). 
 For subject i, the purified protein expression data can be obtained by 

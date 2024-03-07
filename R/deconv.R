@@ -8,26 +8,29 @@
 #' using either single or cross sources.
 #'
 #' @param se A `SummarizedExperiment` object with bulk protein expression
-#' data frame contained in `counts` slot,
+#' data frame contained in assay,
 #' a bulk transcript expression data frame (`gene_data`) contained in
-#' `metadata` slot (both on log scale). A "signature matrix" functions as a 
-#' reference containing known cellular signatures (either `ref_protein` or 
-#' `ref_gene` as an element in the `metadata` slot) may be necessary for 
-#' certain `source`and `method` options. To ensure the reliability of the 
-#' results obtained, we strongly recommend that the "signature matrix" should 
-#' exclusively comprise markers that have been previously validated in the 
-#' literature. 
+#' `metadata` slot (can be rescaled using either log or MinMax transformations,
+#' but need to be consistent between two bulk data). A "signature matrix" 
+#' functions as a reference containing known cellular signatures 
+#' (either `ref_protein` or `ref_gene` as an element in the `metadata` slot) 
+#' may be necessary for certain `source`and `method` options. 
+#' To ensure the reliability of the results obtained, we strongly recommend 
+#' that the "signature matrix" should exclusively comprise markers that have 
+#' been previously validated in the literature. 
 #' @param source A character string denotes which molecular profiles to be
 #' deconvoluted. The setting of `proteins`or `transcript` means single-source
 #' deconvolution with source-specific signature matrix, while `cross` means
 #' proteome deconvolution based on transcriptome-proteome with matched samples. 
 #' @param method A character string specifies the deconvolution method to be 
-#' employed. In the current version, only `nnls` is supported for 
-#' single-source deconvolution. 
+#' employed. In the current version, only 'nnls' is supported for single-source 
+#' deconvolution. Besides the bulk data, `ref_protein` or `ref_gene` is 
+#' required for protein or gene deconvolution, respectively. 
 #' For cross-source deconvolution, `Joint` or `TCA` are valid options. 
 #' If `Joint`, an external reference containing cell counts 
 #' in a similar tissue type (typically obtainable from small-scale single-cell 
-#' or flow cytometry experiments) is necessary. 
+#' or flow cytometry experiments) is necessary if `pinit = "rdirichlet"`; 
+#' A "signature matrix" is required for other methods.
 #' If `TCA`, an input of pre-estimated transcriptome 
 #' proportions, denoted as `prop_gene` as an element in the `metadata` slot, 
 #' is required. This input can be derived from single-source deconvolution 
@@ -50,22 +53,23 @@
 #' `pinit = "rdirichlet"`.
 #' @param pinit Accepts either a numeric matrix or a character indicating the 
 #' method for initializing initial values for cellular fraction. If `pinit` is a
-#' numeric matrix, each row represents the cellular fraction for each sample 
+#' numeric matrix (pre-estimated transcriptome proportions using other methods), 
+#' each row represents the cellular fraction for each sample 
 #' across various cell types. The resulting cellular fraction will match the 
 #' cell types defined in `pinit`. Alternatively, `pinit` can be generated using 
-#' either the 'rdirichlet' or 'nnls' method.
+#' either the `rdirichlet` or `nnls` method.
 #' @param ref_pnl A "signature matrix" functions as a reference containing 
 #' known cellular signatures. It is optional. If provided, the initial values 
 #' for purified data will be generated based on `ref_pnl`. Otherwise, 
 #' the initial values for purified data will be generated using a normal 
-#' distribution based on bulk data. Please note that an internal log 
-#' transformation is applied, so `ref_pnl` should be provided on a raw scale 
-#' if used.
+#' distribution based on bulk data. Please note that the input signature matrix 
+#' should have the same rescaling transformation as the bulk 
+#' transcriptomes/proteomic.
 #'
 #' @return A `SummarizedExperiment`. The cell-type proportion estimates for each
 #' sample are stored as elements starting with prop in the metadata slot. 
 #' If method = Joint, then the cellular fractions obtained from proteomics and 
-#' transcriptomics are stored in the prop and prop2 elements, respectively, 
+#' transcriptomics are stored in the `prop` and `prop2` elements, respectively, 
 #' within the metadata slot. The purified data is stored in a list with the 
 #' same length as the number of subjects (the number of columns in the assay). 
 #' For subject i, the purified protein expression data can be obtained by 
@@ -140,11 +144,11 @@ deconv <- function(se,
         }
         gene_sub <-
             as.data.frame(metadata(se)$gene_data[in_use, ,
-                drop = FALSE
+                                                 drop = FALSE
             ])
         ref_gene <-
             metadata(se)$ref_gene[in_use, , drop = FALSE]
-    
+        
         if (method == "nnls") {
             decon_nnls <- apply(gene_sub, 2, function(y) {
                 nnls::nnls(as.matrix(ref_gene), y)$x
@@ -195,19 +199,16 @@ deconv <- function(se,
             my_res <- lapply(seq_len(n_sample), function(i){
                 message("sample", i)
                 if(!is.null(ref_pnl)){
-                    if(mean(as.vector(ref_pnl) < 1) < 0.5){
-                        X1 <- log2(ref_pnl[in_prot,]+1)
-                        X2 <- log2(ref_pnl[in_rna,]+1)
-                    } else{
-                        X1 <- log2(ref_pnl[in_prot,]+0.0001)
-                        X2 <- log2(ref_pnl[in_rna,]+0.0001) 
-                    }
+                    X1 <- ref_pnl[in_prot,, drop = FALSE]
+                    X2 <- ref_pnl[in_rna,, drop = FALSE]
                 } else{
                     X1 <- matrix(rnorm(n = K*n_feature1, 
                                        mean = mean(as.vector(
-                                           as.matrix(assay(se)[in_prot, ]))), 
+                                           as.matrix(assay(se)[in_prot,, 
+                                                               drop = FALSE]))), 
                                        sd = sd(as.vector(
-                                           as.matrix(assay(se)[in_prot, ])))), 
+                                           as.matrix(assay(
+                                               se)[in_prot,, drop = FALSE ])))), 
                                  nrow = n_feature1)
                     X2 <- matrix(rnorm(n = K*n_feature2, 
                                        mean = mean(as.vector(as.matrix(
@@ -216,11 +217,12 @@ deconv <- function(se,
                                            metadata(se)$gene_data)))),
                                  nrow = n_feature2) 
                 }
-                Y1 <- as.matrix(assay(se)[in_prot, , drop = FALSE])[,i]
-                Y2 <- as.matrix(metadata(se)$gene_data[in_rna, , 
-                                                       drop = FALSE])[,i]
+                Y1 <- as.matrix(assay(se)
+                                [in_prot, , drop = FALSE])[,i, drop = TRUE]
+                Y2 <- as.matrix(metadata(se)$gene_data
+                                [in_rna, ,drop = FALSE])[,i, drop = TRUE]
                 if(is.matrix(pinit)){
-                    ini_p <- pinit[i,]
+                    ini_p <- pinit[i,, drop = TRUE]
                 } else if(pinit == "rdirichlet"){
                     if (is.null(cell_counts)) {
                         stop("cell_counts is required for rdirichlet method.")
@@ -235,7 +237,7 @@ deconv <- function(se,
                         stop("ref_pnl is required for nnls method.")
                     }
                     result <- nnls::nnls(ref_pnl[in_rna, , drop = FALSE],
-                                         2^(metadata(se)$gene_data[in_rna,i]))   
+                                         metadata(se)$gene_data[in_rna,i])   
                     ini_p <- result$x/sum(result$x)
                 }
                 ini_s <- list(rep(1,K), rep(1,K))
@@ -249,12 +251,12 @@ deconv <- function(se,
                 rownames(X1) <- in_prot
                 rownames(X2) <- in_rna
                 res <- MICSQTL_optim(Y1, Y2,
-                                      ini_p, ini_s,
-                                      X1 = X1, X2 = X2,
-                                      step_p = Step[1],
-                                      step_s = Step[2],
-                                      eps = Eps,
-                                      iter = Iter)
+                                     ini_p, ini_s,
+                                     X1 = X1, X2 = X2,
+                                     step_p = Step[1],
+                                     step_s = Step[2],
+                                     eps = Eps,
+                                     iter = Iter)
                 return(res[c("prop1", "prop2", "X1", "X2", 
                              "ini_p", "s1", "s2")])
             })
@@ -264,7 +266,7 @@ deconv <- function(se,
             prop2 <- do.call(rbind, lapply(my_res, 
                                            function(sub_res) sub_res$prop2))
             rownames(prop2) <- colnames(metadata(se)$gene_data)
-    
+            
             if(!is.null(cell_counts)){
                 colnames(prop) <- colnames(cell_counts)
                 colnames(prop2) <- colnames(cell_counts)

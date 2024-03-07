@@ -78,7 +78,6 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
                          score = "cns_1", group_var = "disease",
                          scatter = FALSE, scatter_x, scatter_y,
                          refactor_loading = FALSE) {
-    
     if(is.null(metadata(se)$ajive_res)){
         if (level == "bulk") {
             dat1 <- assay(se)
@@ -185,7 +184,7 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
     }
     if(refactor_loading){
         refactor <- lapply(seq_len(2), function(i){
-            loadings <- get_block_loadings(ajive_res, i, "joint")
+            loadings <- get_block_loadings(metadata(se)$ajive_res, i, "joint")
             if(i == 1){
                 data <- as.matrix(assay(se))
             } else{

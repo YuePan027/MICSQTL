@@ -1,3 +1,6 @@
+# MICSQTL 0.99.19
+- Update the Vignette and data documentation.
+
 # MICSQTL 0.99.18
 - Update the deconv function by incorporating method using signature matrix.
 

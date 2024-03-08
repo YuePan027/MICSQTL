@@ -68,7 +68,7 @@ recommended to include only marker genes.
 For easier illustration purposes, we provide an example `SummarizedExperiment` 
 object within this package, which contains the following elements:
     
--   protein_data (assay): A subset of proteomic data PsychENCODE (on log scale) 
+-   protein_data (assay): An example proteomics data (on log scale) 
 with 2,242 rows (protein) and 127 columns (sample).
 
 -   anno_protein (rowData): A data frame with 2,242 rows and 4 columns 
@@ -76,14 +76,14 @@ with 2,242 rows (protein) and 127 columns (sample).
 
 -   ref_protein (in metadata): A signature matrix with 2,242 rows (protein) and 
 4 columns (cell types), which serves as a reference of known cellular signatures 
-(on raw scale).
+(on log scale).
 
 -   gene_data (in metadata): A data frame with 2,867 rows (genes) and 127 
 columns (sample) (on log scale).
 
 -   ref_gene (in metadata): A signature matrix with 4,872 rows (genes) and 5 
 columns (cell types), which serves as a reference of known cellular signatures 
-(on raw scale).
+(on log scale).
 
 -   prop_gene (in metadata): A pre-defined deconvoluted transcriptome proportion 
 matrix.
@@ -116,11 +116,11 @@ data frames or matrices.
 
 ```{r eg, eval = FALSE}
 se <- SummarizedExperiment(
-    assays = list(protein = protein_data),
-    rowData = anno_protein
+    assays = list(protein = your_protein_data),
+    rowData = your_anno_protein
 )
 metadata(se) <- list(
-    gene_data = gene_data
+    gene_data = your_gene_data
 )
 ```
 
@@ -128,7 +128,7 @@ Additional metadata can be incorporated using a command such as
 `metadata(se)$new_data <- new_data` if further information is necessary for 
 visualization or csQTL (cell-type specific quantitative trait loci) analysis. 
 For detailed instructions, please refer to the following sections and the 
-function documentation."
+function documentation.
 
 
 
@@ -141,9 +141,10 @@ In this current version, only `nnls` is supported as a single-source deconvoluti
 
 ## Cross-source cell-type proportion deconvolution
 
-The reference matrix for pure cell proteomics may be incomplete due to limitations inherent in single-cell proteomics technologies. To address this issue, we propose a novel cross-source cell-type fraction deconvolution method (JNMF-AJ-RF) that capitalizes on matched bulk transcriptome-proteome data. In the following example, we illustrate the process of estimating protein proportions by integrating information from deconvoluted transcriptomes.
+The reference matrix for pure cell proteomics may be incomplete due to limitations inherent in single-cell proteomics technologies. To address this issue, we propose a novel cross-source cell-type fraction deconvolution method "Joint Non-negative Matrix Factorization" (JNMF) that capitalizes on matched bulk transcriptome-proteome data. In the following example, we illustrate the process of estimating protein proportions by integrating information from deconvoluted transcriptomes.
 
-There are multiple options available for initializing cellular fractions and purified proteomics on a sample-wise basis, each with different input requirements. The following example illustrates using the CIBERSORT method to estimate initial proportions (`pinit`), coupled with an external reference matrix (`ref_pnl`) containing gene expression profiles or molecular signatures of different cell types. These references are typically obtained from small-scale single-cell or flow cytometry experiments. Please note that `ref_pnl` should have the same rescaling transformation as the bulk transcriptomes/proteomics.
+There are multiple options available for initializing cellular fractions and purified proteomics on a sample-wise basis, each with different input requirements. The following example illustrates using the CIBERSORT method to estimate initial proportions (`pinit`), coupled with an external reference matrix (`ref_pnl`) containing gene expression profiles or molecular signatures of different cell types. These references are typically obtained from small-scale single-cell or flow cytometry experiments. Please note that `ref_pnl` should have the same rescaling transformation as the bulk transcriptomes/proteomics and 
+have be non-negative.
 
 It is recommended to use the `ajive_decomp` function (further discussed in the following section) with the `refactor_loading = TRUE` to enhance joint deconvolution. This setting enables cross-source feature selection aimed at identifying potential protein cell markers.
 
@@ -151,11 +152,11 @@ If the estimated cell-type proportions contain any invalid or non-finite values,
 
 ```{r cross, message = FALSE, warning = FALSE, results = FALSE, eval = FALSE}
 se <- ajive_decomp(se, use_marker = FALSE, refactor_loading = TRUE)
-se <- deconv(se, source = "cross", method = "Joint", 
+se <- deconv(se, source = "cross", method = "JNMF", 
              Step = c(10^(-9), 10^(-7)),
              use_refactor = 1000,
              pinit = se@metadata$prop_gene,
-             ref_pnl = log(se@metadata$ref_gene+1))
+             ref_pnl = se@metadata$ref_gene)
 ```
 
 ```{r plot2, echo = FALSE, warning = FALSE, eval = FALSE}

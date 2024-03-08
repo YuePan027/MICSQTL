@@ -1,3 +1,6 @@
+# MICSQTL 0.99.18
+- Update the deconv function by incorporating method using signature matrix.
+
 # MICSQTL 0.99.17
 - Fix file name in vignette.
 

@@ -35,8 +35,8 @@
 #' which cell type should be used. By default, the integrative analysis is done
 #' at bulk level.
 #' @param plot If TRUE, visualization on common normalized scores across 
-#' different data sources will be stored as an element (`cns_plot`) in `metadata` 
-#' slot.
+#' different data sources will be stored as an element (`cns_plot`) in 
+#' `metadata` slot.
 #' @param score A character of variable name indicating which common
 #' normalized score is used for boxplot and ridge plot (valid if plot = TRUE).
 #' @param group_var A character of variable name indicating which variable is
@@ -78,7 +78,6 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
                          score = "cns_1", group_var = "disease",
                          scatter = FALSE, scatter_x, scatter_y,
                          refactor_loading = FALSE) {
-    
     if(is.null(metadata(se)$ajive_res)){
         if (level == "bulk") {
             dat1 <- assay(se)
@@ -97,7 +96,8 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
         }
         
         if (!all(colnames(dat1) == colnames(dat2))) {
-            stop("Samples in the first data do not match that in the second data")
+            stop("Samples in the first data do not match that 
+                 in the second data")
         }
         
         blocks_test <- list(
@@ -183,8 +183,8 @@ ajive_decomp <- function(se, ini_rank = c(20, 20), test = "gene_data",
         metadata(se)$cns_plot <- plot
     }
     if(refactor_loading){
-        refactor <- lapply(1:2, function(i){
-            loadings <- get_block_loadings(ajive_res, i, "joint")
+        refactor <- lapply(seq_len(2), function(i){
+            loadings <- get_block_loadings(metadata(se)$ajive_res, i, "joint")
             if(i == 1){
                 data <- as.matrix(assay(se))
             } else{

@@ -26,8 +26,8 @@
 #' employed. In the current version, only 'nnls' is supported for single-source 
 #' deconvolution. Besides the bulk data, `ref_protein` or `ref_gene` is 
 #' required for protein or gene deconvolution, respectively. 
-#' For cross-source deconvolution, `Joint` or `TCA` are valid options. 
-#' If `Joint`, an external reference containing cell counts 
+#' For cross-source deconvolution, `JNMF` or `TCA` are valid options. 
+#' If `JNMF`, an external reference containing cell counts 
 #' in a similar tissue type (typically obtainable from small-scale single-cell 
 #' or flow cytometry experiments) is necessary if `pinit = "rdirichlet"`; 
 #' A "signature matrix" is required for other methods.
@@ -41,15 +41,15 @@
 #' If NULL, then all proteins included in assay will be used.
 #' @param Step A numeric vector indicates the step size in projected gradient 
 #' descent for cell count fraction parameter and cell size parameter, 
-#' respectively. Only valid if `method = Joint`.
+#' respectively. Only valid if `method = JNMF`.
 #' @param Eps A numeric value indicates the convergence criteria for projected 
-#' gradient descent. Only valid if `method = Joint`.
+#' gradient descent. Only valid if `method = JNMF`.
 #' @param Iter A numeric value indicates the maximum iteration time for 
-#' projected gradient descent. Only valid if `method = Joint`.
+#' projected gradient descent. Only valid if `method = JNMF`.
 #' @param cell_counts A matrix containing cell counts across multiple subjects, 
 #' where subjects are represented as rows and cell types as columns. Each entry 
 #' (i, j) in the matrix indicates the count of cells belonging to the ith 
-#' subject and jth cell type. Only required if `method = Joint` and 
+#' subject and jth cell type. Only required if `method = JNMF` and 
 #' `pinit = "rdirichlet"`.
 #' @param pinit Accepts either a numeric matrix or a character indicating the 
 #' method for initializing initial values for cellular fraction. If `pinit` is a
@@ -68,7 +68,7 @@
 #'
 #' @return A `SummarizedExperiment`. The cell-type proportion estimates for each
 #' sample are stored as elements starting with prop in the metadata slot. 
-#' If method = Joint, then the cellular fractions obtained from proteomics and 
+#' If `method = JNMF`, then the cellular fractions obtained from proteomics and 
 #' transcriptomics are stored in the `prop` and `prop2` elements, respectively, 
 #' within the metadata slot. The purified data is stored in a list with the 
 #' same length as the number of subjects (the number of columns in the assay). 
@@ -94,7 +94,7 @@
 #'
 deconv <- function(se,
                    source = "cross",
-                   method = c("nnls", "Joint", "TCA"),
+                   method = c("nnls", "JNMF", "TCA"),
                    use_refactor = c(1000, NULL),
                    Step = c(10^(-8), 10^(-6)),
                    Eps = 10^(-4),
@@ -160,11 +160,11 @@ deconv <- function(se,
         metadata(se)$prop <- prop
     }
     if (source == "cross") {
-        if (!method %in% c("Joint", "TCA", "nnls")) {
+        if (!method %in% c("JNMF", "TCA", "nnls")) {
             stop("At the current version, 
-                 only nnls, Joint, and TCA are supported methods.")
+                 only nnls, JNMF, and TCA are supported methods.")
         }
-        if(method == "Joint"){
+        if(method == "JNMF"){
             in_prot <- rownames(assay(se))
             in_rna <- rownames(metadata(se)$gene_data)
             if(!is.null(use_refactor)){

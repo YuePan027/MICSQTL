@@ -7,8 +7,8 @@
 \format{
 A `SummarizedExperiment`object with following example data:
 \describe{
-  \item{protein_data}{A subset of proteomic data PsychENCODE with 2242 rows
-(protein) and 127 columns (sample).}
+  \item{protein_data}{An example proteomics data (on log scale) 
+  with 2,242 rows (protein) and 127 columns (sample).}
   \item{anno_protein}{A data frame with 2242 rows and 4 columns
 (Chr, Start, End, Symbol) as
 annotations of each protein from `protein_data`.}

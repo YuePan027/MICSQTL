@@ -1,0 +1,15 @@
+bibentry(
+  bibtype  = "article",
+  title    = "Multimodal joint deconvolution and integrative signature selection in proteomics.",
+  author   = personList(as.person("Yue Pan"),
+                        as.person("Xusheng Wang"),
+                        as.person("Jiao Sun"),
+                        as.person("Chunyu Liu"),
+                        as.person("Junmin Peng"),
+                        as.person("Qian Li")),
+  journal  = "Communications Biology",
+  year     = 2024,
+  volume   = 7,
+  number   = 493,
+  doi      = "10.1038/s42003-024-06155-z"
+)

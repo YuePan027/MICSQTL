@@ -1,14 +1,14 @@
 Package: MICSQTL
 Type: Package
 Title: MICSQTL (Multi-omic deconvolution, Integration and Cell-type-specific Quantitative Trait Loci)
-Version: 1.1.0
-Authors@R: c(person("Yue", "Pan", role = c("aut", "cre"),
+Version: 1.1.1
+Authors@R: c(person("Yue", "Pan", role = "aut"),
                      email = "ypan@stjude.org",
                      comment = c(ORCID = "0000-0003-1958-2744")),
-             person("Qian", "Li", role = "aut",
-                     email = "Qian.Li@STJUDE.ORG"),
              person("Iain", "Carmichael", role = "ctb",
-                     email = "iain@berkeley.edu"))
+                     email = "iain@berkeley.edu"),
+            person("Qian", "Li", role = c("aut","cre"),
+                     email = "Qian.Li@STJUDE.ORG"),)
 Description: Our pipeline, MICSQTL, utilizes scRNA-seq reference and bulk transcriptomes to estimate cellular composition in the matched bulk proteomes. The expression of genes and proteins at either bulk level or cell type level can be integrated by Angle-based Joint and Individual Variation Explained (AJIVE) framework. Meanwhile, MICSQTL can perform cell-type-specic quantitative trait loci (QTL) mapping to proteins or transcripts based on the input of bulk expression data and the estimated cellular composition per molecule type, without the need for single cell sequencing. We use matched transcriptome-proteome from human brain frontal cortex tissue samples to demonstrate the input and output of our tool.
 License: GPL-3
 Encoding: UTF-8
